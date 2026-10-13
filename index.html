@@ -19,13 +19,13 @@ import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/1
    Firebase Console → ⚙️ Project settings → General → Your apps → Web app → Config
    ===================================================================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyDNbNRCl_hyB6sNrRJAYQzB9SIlY6MdggY",
-  authDomain: "iih---project-tracker---moc.firebaseapp.com",
-  projectId: "iih---project-tracker---moc",
-  storageBucket: "iih---project-tracker---moc.firebasestorage.app",
-  messagingSenderId: "95987522752",
-  appId: "1:95987522752:web:0db4afe5be84a2b34d6125",
-  measurementId: "G-67Q6BCVTRK"
+  apiKey: "AIzaSyBnk2fSnSi8Vh4Oq4-zvagfqmqOpJ3_3jQ",
+  authDomain: "iih-trackers-db.firebaseapp.com",
+  projectId: "iih-trackers-db",
+  storageBucket: "iih-trackers-db.firebasestorage.app",
+  messagingSenderId: "49565535351",
+  appId: "1:49565535351:web:0eca8aa6ba1c64aa9c4a72",
+  measurementId: "G-WH810FCZKR"
 };
 const app  = initializeApp(firebaseConfig);
 const db   = initializeFirestore(app, { experimentalForceLongPolling: true });   // plain requests instead of a streaming channel: the stream took 10 s+ to open on the office network
