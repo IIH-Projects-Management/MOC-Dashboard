@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOC Restore</title>
+<style>
+:root{--navy:#1B2A4A;--navy2:#14213D;--green:#00845A;--pink:#C0266A;--amber:#E88B00;--red:#C0392B;--bg:#F4F6F9;--border:#D8E2EC;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--navy);font:14px/1.5 Inter,Segoe UI,Arial,sans-serif;padding:24px 16px}
+.wrap{max-width:720px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:#667085;margin:0 0 20px}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px}
+.card h2{font-size:14px;margin:0 0 10px}
+input,textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 11px;font:inherit}
+textarea{min-height:150px;font-family:Consolas,monospace;font-size:12px}
+button{background:var(--navy);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.check{display:flex;gap:8px;align-items:center;margin-top:10px}
+.check input{width:auto}
+#log{background:var(--navy2);color:#E6EDF7;border-radius:10px;padding:12px;font:12px/1.6 Consolas,monospace;white-space:pre-wrap;min-height:80px;max-height:360px;overflow:auto}
+.ok{color:#7BE0B0}.err{color:#FF9A8F}.warn{color:#FFC872}
+.note{font-size:12px;color:#667085}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>MOC Dashboard: Restore backup</h1>
+  <p class="sub">One-time move of a <b>💾 Full backup</b> (.json) into the new Firebase project. Delete this page from the site when you are done.</p>
+
+  <div class="card">
+    <h2>1. Firebase config of the NEW project</h2>
+    <p class="note">Paste the <code>firebaseConfig = { ... }</code> block (the same one you put in index.html).</p>
+    <textarea id="cfg" placeholder='{ apiKey: "...", authDomain: "...", projectId: "...", ... }'></textarea>
+  </div>
+
+  <div class="card">
+    <h2>2. Backup file</h2>
+    <input id="file" type="file" accept=".json,application/json">
+    <label class="check"><input id="dry" type="checkbox"> Test only: count what would be written, write nothing</label>
+    <p class="note">Names and emails of who edited / closed / deleted are removed on the way. Assignees on tasks stay (they are project data).</p>
+  </div>
+
+  <div class="card">
+    <div class="row"><button id="go">Restore</button><span class="note" id="status"></span></div>
+    <div id="log" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getFirestore, doc, writeBatch, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+const $ = id => document.getElementById(id);
+const logEl = $('log');
+const log = (msg, cls) => { const s = document.createElement('div'); if(cls) s.className = cls; s.textContent = msg; logEl.appendChild(s); logEl.scrollTop = logEl.scrollHeight; };
+
+// same collection names the dashboard uses
+const COLLECTIONS = ['tasks','epics','milestones','risks','mapetasks',
+  'cp_phases','cp_tasks','cp_risks','cp_raci','cp_channels','cp_users','cp_prompts','cp_meetings','cp_support','cp_metrics','cp_surveys'];
+// "who did it" fields - dropped (v9 has no users)
+const PERSON_FIELDS = ['createdBy','updatedBy','updatedByName','deletedBy','closedBy','by','byName','madeBy'];
+
+const slug = s => String(s||'item').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').substring(0,80) || 'item';
+const usedMape = new Set();
+const idOf = (coll, item) => {
+  if(coll !== 'mapetasks') return item.id;
+  let id = item._docId || item.id;
+  if(!id){ const b = slug(item.title); id = b; let i = 2; while(usedMape.has(id)) id = b + '_' + (i++); }   // same rule the dashboard uses
+  usedMape.add(id); return id;
+};
+
+const ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;   // dates were Firestore timestamps - turn them back
+function revive(v){
+  if(typeof v === 'string' && ISO.test(v)){ const d = new Date(v); return isNaN(d) ? v : Timestamp.fromDate(d); }
+  if(Array.isArray(v)) return v.map(revive);
+  if(v && typeof v === 'object'){ const o = {}; Object.keys(v).forEach(k=>{ if(v[k] !== undefined && !PERSON_FIELDS.includes(k)) o[k] = revive(v[k]); }); return o; }
+  return v;
+}
+function clean(item){ const o = {}; Object.keys(item).forEach(k=>{ if(!k.startsWith('_')) o[k] = item[k]; }); return revive(o); }
+
+function parseConfig(txt){
+  const body = txt.slice(txt.indexOf('{'), txt.lastIndexOf('}') + 1);
+  if(!body) throw new Error('No { ... } found in the config box');
+  return Function('"use strict"; return (' + body + ');')();   // accepts the console snippet as-is (unquoted keys)
+}
+
+$('go').onclick = async ()=>{
+  logEl.textContent = ''; $('go').disabled = true;
+  try{
+    const cfg = parseConfig($('cfg').value);
+    if(!cfg.projectId || String(cfg.projectId).includes('PASTE')) throw new Error('The config is not filled in');
+    const f = $('file').files[0]; if(!f) throw new Error('Choose the backup .json file');
+    const B = JSON.parse(await f.text());
+    if(B.kind !== 'full-backup') throw new Error('This is not a "💾 Full backup" file from the dashboard');
+    const dry = $('dry').checked;
+    log(`Backup made ${B.madeAt || '?'} → project "${cfg.projectId}"${dry ? ' (TEST ONLY)' : ''}`);
+
+    const app = initializeApp(cfg, 'restore-' + Date.now());
+    const db = getFirestore(app);
+    await signInAnonymously(getAuth(app));
+    log('✓ Connected', 'ok');
+
+    const ops = [], skipped = [];
+    const add = (coll, id, data) => { if(!id){ skipped.push(coll); return; } ops.push({ coll, id: String(id), data }); };
+    COLLECTIONS.forEach(c=>{
+      (B.collections && B.collections[c] || []).forEach((it, i)=>{
+        const d = clean(it); if(c === 'milestones' && d.order === undefined) d.order = i;
+        add(c, idOf(c, it), { ...d, deleted:false });
+      });
+      ((B.deleted || {})[c] || []).forEach(it=> add(c, idOf(c, it), { ...clean(it), deleted:true }));
+    });
+    (B.weeklyClosings || []).forEach(s=> add('snapshots', s._docId || s.weekId, clean(s)));
+    if(B.clientPage)  add('settings', 'clientPage',  clean(B.clientPage));
+    if(B.clientFacts) add('settings', 'clientFacts', clean(B.clientFacts));
+    // the change history (B.history) is NOT restored - v9 has no history
+
+    const counts = {}; ops.forEach(o=> counts[o.coll] = (counts[o.coll] || 0) + 1);
+    Object.keys(counts).forEach(c=> log(`  ${c}: ${counts[c]}`));
+    if(skipped.length) log(`⚠ ${skipped.length} item(s) had no id and were skipped (${[...new Set(skipped)].join(', ')})`, 'warn');
+    if(dry){ log('Test only - nothing was written.', 'warn'); return; }
+
+    for(let i = 0; i < ops.length; i += 400){
+      const b = writeBatch(db);
+      ops.slice(i, i + 400).forEach(o=> b.set(doc(db, o.coll, o.id), o.data));
+      await b.commit();
+      $('status').textContent = `${Math.min(i + 400, ops.length)} / ${ops.length}`;
+    }
+    log(`✓ Done - ${ops.length} records written.`, 'ok');
+    log('Next: open the dashboard (Ctrl+F5) and check the numbers, then delete restore.html from the site.', 'ok');
+  }catch(e){
+    const c = (e && e.code) || '';
+    log('✕ ' + (c.includes('operation-not-allowed') || c.includes('admin-restricted') ? 'Turn on Anonymous sign-in: Firebase → Authentication → Sign-in method → Anonymous.'
+             : c.includes('permission-denied') ? 'The database refused the write - publish firestore.rules first (Firestore Database → Rules).'
+             : (c ? c + ': ' : '') + e.message), 'err');
+  }finally{ $('go').disabled = false; }
+};
+</script>
+</body>
+</html>
