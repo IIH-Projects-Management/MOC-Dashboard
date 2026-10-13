@@ -1,4 +1,4 @@
-<!-- MOC Dashboard | v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
+<!-- MOC Dashboard | v10 (2026-10-13): per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -12,7 +12,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getFirestore, initializeFirestore, collection, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, writeBatch,
          runTransaction, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification,
+         sendPasswordResetEmail, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 /* =====================================================================
    🔧 FIREBASE CONFIG - the ONLY thing to change for a new Firebase project.
@@ -37,7 +38,7 @@ const auth = getAuth(app);
 const gate = id => document.getElementById(id);
 function gateShow(panel, msg){
   gate('authGate').style.display = 'flex';
-  ['gateNoAccess','gateLoading'].forEach(p=>{
+  ['gateLogin','gateCreate','gateVerify','gateNoAccess','gateLoading'].forEach(p=>{
     gate(p).style.display = p===panel ? 'block' : 'none';
   });
   const m = gate(panel+'Msg'); if(m) m.textContent = msg || '';
@@ -58,7 +59,7 @@ function stopSession(){
 }
 function paintUserChip(){
   const u = window.CURRENT_USER, chip = document.getElementById('userChip');
-  if(chip && u) chip.innerHTML = `<b>${escapeHtml(u.name)}</b> · ${u.role.charAt(0).toUpperCase()+u.role.slice(1)}`;
+  if(chip && u) chip.innerHTML = `👤 <b>${escapeHtml(u.name)}</b> · ${u.role.charAt(0).toUpperCase()+u.role.slice(1)} ▾`;
 }
 
 /* ---------- collection definitions (persisted fields only; % is never stored) ---------- */
@@ -71,21 +72,21 @@ const COLL = {
   milestones: { get:()=>MILESTONES_DATA, set:v=>{ MILESTONES_DATA.splice(0, MILESTONES_DATA.length, ...v);
                                                    INITIATIVES.splice(0, INITIATIVES.length, ...MILESTONES_DATA.map(m=>m.name)); },
                 key:m=>m.id, minLevel:1, fields:['id','name','startDate','targetDate','order'] },
-  risks:      { get:()=>RISK_REGISTER_DATA, set:v=>{ RISK_REGISTER_DATA = v; }, key:r=>r.id, minLevel:2,
+  risks:      { get:()=>RISK_REGISTER_DATA, set:v=>{ RISK_REGISTER_DATA = v; }, key:r=>r.id, minLevel:1,
                 fields:['id','initiative','category','description','impact','score','status','owner','mitigation','contingency','createdAt','createdBy'] },
   mapetasks:  { get:()=>MAPE_TASKS, set:v=>{ MAPE_TASKS = v; }, key:t=>t._docId, minLevel:1, fields:null },
   // ✨ Copilot Rollout workspace - team only (Member+), free-form docs keyed by id
-  cp_phases: { get:()=>CP_PHASES, set:v=>{ CP_PHASES = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_tasks: { get:()=>CP_TASKS, set:v=>{ CP_TASKS = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_risks: { get:()=>CP_RISKS, set:v=>{ CP_RISKS = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_raci: { get:()=>CP_RACI, set:v=>{ CP_RACI = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_channels: { get:()=>CP_CHANNELS, set:v=>{ CP_CHANNELS = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_users: { get:()=>CP_USERS, set:v=>{ CP_USERS = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_prompts: { get:()=>CP_PROMPTS, set:v=>{ CP_PROMPTS = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_meetings: { get:()=>CP_MEETINGS, set:v=>{ CP_MEETINGS = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_support: { get:()=>CP_SUPPORT, set:v=>{ CP_SUPPORT = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_metrics: { get:()=>CP_METRICS, set:v=>{ CP_METRICS = v; }, key:x=>x.id, minLevel:2, fields:null },
-  cp_surveys: { get:()=>CP_SURVEYS, set:v=>{ CP_SURVEYS = v; }, key:x=>x.id, minLevel:2, fields:null }
+  cp_phases: { get:()=>CP_PHASES, set:v=>{ CP_PHASES = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_tasks: { get:()=>CP_TASKS, set:v=>{ CP_TASKS = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_risks: { get:()=>CP_RISKS, set:v=>{ CP_RISKS = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_raci: { get:()=>CP_RACI, set:v=>{ CP_RACI = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_channels: { get:()=>CP_CHANNELS, set:v=>{ CP_CHANNELS = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_users: { get:()=>CP_USERS, set:v=>{ CP_USERS = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_prompts: { get:()=>CP_PROMPTS, set:v=>{ CP_PROMPTS = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_meetings: { get:()=>CP_MEETINGS, set:v=>{ CP_MEETINGS = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_support: { get:()=>CP_SUPPORT, set:v=>{ CP_SUPPORT = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_metrics: { get:()=>CP_METRICS, set:v=>{ CP_METRICS = v; }, key:x=>x.id, minLevel:1, fields:null },
+  cp_surveys: { get:()=>CP_SURVEYS, set:v=>{ CP_SURVEYS = v; }, key:x=>x.id, minLevel:1, fields:null }
 };
 const SERVER = {};   // coll -> Map(key -> {data, deleted})
 Object.keys(COLL).forEach(c=> SERVER[c] = new Map());
@@ -198,6 +199,18 @@ function subscribeAll(){
     window.LAST_SNAPSHOT = window.SNAPSHOTS[0] || null;
     markReady('snapshots'); if(expected.every(x=>READY.has(x))) safeRender();
   }, err=>onListenError('snapshots', err)));
+  if(lvl >= 4){
+    unsubs.push(onSnapshot(collection(db,'users'), snap=>{
+      window.USERS_DATA = snap.docs.map(d=>({ email:d.id, ...fromServer(d.data()) })).sort((a,b)=>String(a.name||a.email).localeCompare(String(b.name||b.email)));
+      safeRender();
+    }, err=>console.warn('users', err)));
+  }
+  if(lvl >= 3){
+    unsubs.push(onSnapshot(query(collection(db,'audit'), orderBy('at','desc'), limit(400)), snap=>{
+      window.AUDIT_LOG = snap.docs.map(d=>({ _id:d.id, ...d.data(), at: d.data().at && d.data().at.toDate ? d.data().at.toDate() : new Date() }));
+      if(window.refreshHistoryViews) window.refreshHistoryViews();
+    }, err=>console.warn('audit', err)));
+  }
   if(lvl >= 3){
     unsubs.push(onSnapshot(doc(db,'settings','clientPage'), snap=>{
       window.CLIENT_SETTINGS = snap.exists() ? snap.data() : null; safeRender();
@@ -236,7 +249,7 @@ function applySnapshot(c, snap){
   window.TRASH[c] = trash;
   // "Last Update" = newest server write (and who made it)
   let newest = null, newestBy = null;
-  snap.docs.forEach(d=>{ const x = d.data(); const u = toDate(x.updatedAt); if(u && (!newest || u > newest)){ newest = u; newestBy = null; } });
+  snap.docs.forEach(d=>{ const x = d.data(); const u = toDate(x.updatedAt); if(u && (!newest || u > newest)){ newest = u; newestBy = x.updatedByName || x.updatedBy || null; } });
   if(newest && (!window._lastUpdateTime || newest > window._lastUpdateTime)){ window._lastUpdateTime = newest; window._lastUpdateBy = newestBy; paintLastUpdate(); }
   markReady(c);
   if(expected.every(x=>READY.has(x))) safeRender();
@@ -264,12 +277,12 @@ let syncTimer = null, writing = false, pendingAfterWrite = false;
 window.FB = window.FB || {};
 FB.scheduleSync = scheduleSync;
 function scheduleSync(){
-  if(window.__fbApplying || !window.CURRENT_USER || myLevel() < 2) return;
+  if(window.__fbApplying || !window.CURRENT_USER || myLevel() < 3) return;
   if(syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(()=>{ syncTimer = null; flushSync(); }, 60);
 }
 function flushSync(){
-  if(!window.CURRENT_USER || myLevel() < 2) return;
+  if(!window.CURRENT_USER || myLevel() < 3) return;   // viewers never write
   if(writing){ pendingAfterWrite = true; return; }
   ensureIds();
   const me = window.CURRENT_USER.email;
@@ -326,8 +339,9 @@ function auditRows(ops, me){
 }
 async function writeOps(ops, me){
   writing = true;
-  const stamp = { updatedAt: serverTimestamp() };
+  const stamp = { updatedAt: serverTimestamp(), updatedBy: me, updatedByName: myName() };
   const bulk = ops.length > 40;
+  const audits = auditRows(ops, me);
   try{
     // single new tasks: use a transaction so two people adding at once never share an ID
     const singles = !bulk ? ops.filter(o=>o.kind==='create' && o.coll==='tasks') : [];
@@ -346,7 +360,7 @@ async function writeOps(ops, me){
         const ref = doc(db, o.coll, o.id);
         if(o.kind==='create')       batch.set(ref, { ...o.data, deleted:false, ...stamp });
         else if(o.kind==='restore') batch.set(ref, { ...o.data, deleted:false, deletedAt:null, deletedBy:null, ...stamp }, { merge:true });
-        else if(o.kind==='delete')  batch.update(ref, { deleted:true, deletedAt: serverTimestamp(), ...stamp });
+        else if(o.kind==='delete')  batch.update(ref, { deleted:true, deletedAt: serverTimestamp(), deletedBy: me, ...stamp });
         else {
           const patch = {}; Object.keys(o.changes).forEach(k=> patch[k] = o.data[k] === undefined ? null : o.data[k]);
           batch.update(ref, { ...patch, ...stamp });
@@ -354,7 +368,8 @@ async function writeOps(ops, me){
       });
       await batch.commit();
     }
-    window._lastUpdateTime = new Date(); window._lastUpdateBy = null; paintLastUpdate();
+    writeAudit(audits);
+    window._lastUpdateTime = new Date(); window._lastUpdateBy = myName(); paintLastUpdate();
     // server confirmed - record the new truth (listeners will also deliver it)
     ops.forEach(o=>{
       const cur = SERVER[o.coll].get(o.id);
@@ -394,7 +409,7 @@ function revertToServer(){
 const PRES_ID = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 const presState = { tab:'', editing:null };
 let presUnsub = null;
-const presAllowed = () => false;   // v9: no 'who is online'
+const presAllowed = () => !!window.CURRENT_USER && myLevel() >= 1;   // v10: who is online (team only)
 async function presWrite(){
   if(!presAllowed() || document.hidden) return;
   try{ await setDoc(doc(db,'presence',PRES_ID), { name: myName(), by: window.CURRENT_USER.email, tab: presState.tab || ((document.querySelector('.sidebar .tabbtn.active') || {}).dataset || {}).tab || '', editing: presState.editing || null, at: serverTimestamp() }); }catch(e){}
@@ -428,14 +443,50 @@ FB.closeWeek = async function(opts){
     epics: Object.fromEntries(MOC_DATA.map(e=>[e.id, e.pct])),
     tasks: { total: TASKS_DATA.length, byStatus }
   };
+  data.closedBy = meEmail(); data.closedByName = myName();
   await setDoc(doc(db,'snapshots',weekId), data);
+  writeAudit([{ by: meEmail(), byName: myName(), coll:'snapshots', docId: weekId, action:'close-week', label:'Closed week ' + weekId, changes:null }]);
   return weekId;
 };
 FB.saveClientPage = async function(key, value, label, before){
-  await setDoc(doc(db,'settings','clientPage'), { [key]: value, updatedAt: serverTimestamp() }, { merge:true });
+  await setDoc(doc(db,'settings','clientPage'), { [key]: value, updatedAt: serverTimestamp(), updatedBy: meEmail(), updatedByName: myName() }, { merge:true });
+  writeAudit([{ by: meEmail(), byName: myName(), coll:'settings', docId:'clientPage', action:'update', label: label || key, changes: settingsDiff(before, value) }]);
 };
 FB.saveClientFacts = async function(items, before){
-  await setDoc(doc(db,'settings','clientFacts'), { items, updatedAt: serverTimestamp() });
+  await setDoc(doc(db,'settings','clientFacts'), { items, updatedAt: serverTimestamp(), updatedBy: meEmail(), updatedByName: myName() });
+  writeAudit([{ by: meEmail(), byName: myName(), coll:'settings', docId:'clientFacts', action:'update', label:'Client View facts', changes: settingsDiff(before, items) }]);
+};
+/* change history: one audit row per change (append-only on the server) */
+function writeAudit(rows){
+  if(!rows || !rows.length || !window.CURRENT_USER) return;
+  const run = async ()=>{
+    for(let i=0; i<rows.length; i+=400){
+      const b = writeBatch(db);
+      rows.slice(i, i+400).forEach(r=>{
+        const clean = JSON.parse(JSON.stringify(r, (k,v)=> v===undefined ? null : v));
+        b.set(doc(collection(db,'audit')), { ...clean, at: serverTimestamp() });
+      });
+      await b.commit();
+    }
+  };
+  run().catch(e=>console.warn('audit write', e));
+}
+function meEmail(){ return (window.CURRENT_USER && window.CURRENT_USER.email) || ''; }
+/* Users & Access (admin): one doc per person, keyed by lower-case email */
+FB.saveUser = async function(u){
+  const email = String(u.email||'').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Enter a valid email address');
+  if(!ROLE_LIST.includes(u.role)) throw new Error('Pick a role');
+  const before = (window.USERS_DATA||[]).find(x=>x.email===email) || null;
+  const data = { name: u.name || '', role: u.role, assigneeNames: u.assigneeNames || [], active: u.active !== false, tabs: u.tabs || null,
+                 updatedAt: serverTimestamp(), updatedBy: meEmail() };
+  await setDoc(doc(db,'users',email), data, { merge:true });
+  writeAudit([{ by: meEmail(), byName: myName(), coll:'users', docId: email, action: before ? 'update' : 'create', label: u.name || email,
+                changes: before ? Object.fromEntries(['name','role','active'].filter(k=>String(before[k]??'')!==String(data[k]??'')).map(k=>[k,{from:String(before[k]??''), to:String(data[k]??'')}])) : null }]);
+};
+FB.signOut = async function(){
+  try{ if(typeof PRES_ID !== 'undefined') await deleteDoc(doc(db,'presence',PRES_ID)); }catch(e){}
+  stopSession(); await signOut(auth); location.hash = ''; location.reload();
 };
 FB.hardDelete = async function(coll, id){
   await deleteDoc(doc(db, coll, id));
@@ -444,18 +495,124 @@ FB.hardDelete = async function(coll, id){
 /* =====================================================================
    4) BOOT
    ===================================================================== */
+const BOOTSTRAP_ADMIN = 'mabukhamseh@iih.ai';   // always admin, even before the Users list exists (also in firestore.rules)
+const lc = v => String(v||'').trim().toLowerCase();
+let profileUnsub = null;
+
+/* invite links: #invite=<base64 {e,n}> pre-fills the "create password" form */
+function readInvite(){
+  const m = location.hash.match(/invite=([A-Za-z0-9_-]+)/); if(!m) return null;
+  try{ const t = m[1].replace(/-/g,'+').replace(/_/g,'/'); return JSON.parse(decodeURIComponent(escape(atob(t + '==='.slice((t.length + 3) % 4))))); }catch(e){ return null; }
+}
+function authMsg(e){
+  const c = (e && e.code) || '';
+  if(c.includes('invalid-credential') || c.includes('wrong-password') || c.includes('user-not-found')) return 'Email or password is not correct.';
+  if(c.includes('too-many-requests')) return 'Too many attempts - wait a few minutes, or reset your password.';
+  if(c.includes('email-already-in-use')) return 'This email already has a password - use Sign in (or "Forgot password?").';
+  if(c.includes('weak-password')) return 'Choose a longer password (at least 8 characters).';
+  if(c.includes('invalid-email')) return 'That email address is not valid.';
+  if(c.includes('operation-not-allowed') || c.includes('admin-restricted')) return 'Email/Password sign-in is not enabled in Firebase (Authentication → Sign-in method → Email/Password).';
+  if(c.includes('unauthorized-domain')) return 'This website address is not in Firebase → Authentication → Settings → Authorized domains.';
+  if(c.includes('network')) return 'No connection - check your internet and try again.';
+  return (e && e.message) || String(e);
+}
+function setBusy(btn, busy, label){ if(!btn) return; btn.disabled = busy; if(label) btn.textContent = label; }
+
+window.gateGo = function(panel){
+  gateShow(panel);
+  const em = gate('loginEmail').value || gate('createEmail').value;
+  if(panel === 'gateCreate' && em && !gate('createEmail').value) gate('createEmail').value = em;
+  if(panel === 'gateLogin' && em && !gate('loginEmail').value) gate('loginEmail').value = em;
+};
+window.gateSignIn = async function(){
+  const email = lc(gate('loginEmail').value), pw = gate('loginPassword').value, btn = gate('loginBtn');
+  if(!email || !pw){ gate('gateLoginMsg').textContent = 'Enter your email and password.'; return; }
+  setBusy(btn, true, 'Signing in…'); gate('gateLoginMsg').textContent = '';
+  try{ await signInWithEmailAndPassword(auth, email, pw); }
+  catch(e){ gate('gateLoginMsg').textContent = authMsg(e); }
+  finally{ setBusy(btn, false, 'Sign in'); }
+};
+window.gateForgot = async function(){
+  const email = lc(gate('loginEmail').value);
+  if(!email){ gate('gateLoginMsg').textContent = 'Type your email above first, then click "Forgot password?".'; return; }
+  try{ await sendPasswordResetEmail(auth, email); gate('gateLoginMsg').style.color = 'var(--green)'; gate('gateLoginMsg').textContent = '✓ If this email has an account, a reset link is on its way. Check your inbox (and spam).'; }
+  catch(e){ gate('gateLoginMsg').style.color = ''; gate('gateLoginMsg').textContent = authMsg(e); }
+};
+window.gateCreate = async function(){
+  const email = lc(gate('createEmail').value), pw = gate('createPassword').value, pw2 = gate('createPassword2').value, btn = gate('createBtn');
+  const msg = gate('gateCreateMsg'); msg.textContent = '';
+  if(!email || !pw){ msg.textContent = 'Enter your email and choose a password.'; return; }
+  if(pw.length < 8){ msg.textContent = 'Choose a longer password (at least 8 characters).'; return; }
+  if(pw !== pw2){ msg.textContent = 'The two passwords do not match.'; return; }
+  setBusy(btn, true, 'Creating…');
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, pw);
+    await sendEmailVerification(cred.user);
+  }catch(e){ msg.textContent = authMsg(e); }
+  finally{ setBusy(btn, false, 'Create password'); }
+};
+window.gateResend = async function(){
+  try{ await sendEmailVerification(auth.currentUser); gate('gateVerifyMsg').style.color = 'var(--green)'; gate('gateVerifyMsg').textContent = '✓ Sent again - check your inbox (and spam).'; }
+  catch(e){ gate('gateVerifyMsg').style.color = ''; gate('gateVerifyMsg').textContent = authMsg(e); }
+};
+window.gateVerified = async function(){
+  try{ await auth.currentUser.reload(); await auth.currentUser.getIdToken(true); }catch(e){}
+  if(auth.currentUser && auth.currentUser.emailVerified) startFor(auth.currentUser);
+  else { gate('gateVerifyMsg').style.color = ''; gate('gateVerifyMsg').textContent = 'Not verified yet - open the link in the email first.'; }
+};
+window.gateSignOut = async function(){ try{ await signOut(auth); }catch(e){} location.reload(); };
+
+/* signed in + verified → load the person's profile (role) and start */
+async function startFor(user){
+  const email = lc(user.email);
+  gateShow('gateLoading', 'Loading your access…');
+  const ref = doc(db,'users',email);
+  let snap = null;
+  try{ snap = await getDoc(ref); }catch(e){ console.warn('profile', e); }
+  if((!snap || !snap.exists()) && email === BOOTSTRAP_ADMIN){
+    try{ await setDoc(ref, { name: user.displayName || 'Mahmoud Abukhamseh', role:'admin', active:true, assigneeNames:[], tabs:null, updatedAt: serverTimestamp(), updatedBy: email });
+         snap = await getDoc(ref); }catch(e){ console.warn('bootstrap admin', e); }
+  }
+  if(!snap || !snap.exists() || snap.data().active === false || !ROLE_LEVEL[snap.data().role]){
+    gateShow('gateNoAccess', `${email} is signed in, but it is not on this dashboard's access list (or is turned off). Ask your admin to add you in Users & Access.`);
+    gate('gateNoAccessOut').style.display = '';
+    return;
+  }
+  const apply = (d, first)=>{
+    const prevRole = window.CURRENT_USER && window.CURRENT_USER.role;
+    window.CURRENT_USER = { email, name: d.name || email.split('@')[0], role: d.role, assigneeNames: d.assigneeNames || [], tabs: d.tabs || null };
+    paintUserChip();
+    if(first || prevRole !== d.role){ subscribeAll(); }
+    else safeRender();
+  };
+  apply(snap.data(), true);
+  if(profileUnsub) profileUnsub();
+  profileUnsub = onSnapshot(ref, s=>{
+    if(!s.exists() || s.data().active === false){ showInfoToast('Your access was turned off.'); setTimeout(()=>window.FB.signOut(), 1500); return; }
+    if(!window.CURRENT_USER) return;
+    const d = s.data(), cu = window.CURRENT_USER;
+    if(d.role !== cu.role || d.name !== cu.name || JSON.stringify(d.tabs||null) !== JSON.stringify(cu.tabs||null) || JSON.stringify(d.assigneeNames||[]) !== JSON.stringify(cu.assigneeNames||[])) apply(d, false);
+  }, ()=>{});
+}
+
 gateShow('gateLoading', 'Connecting…');
-/* v9: no login. The page signs in anonymously (needed by the database rules) and everyone can view and edit. */
-window.CURRENT_USER = { email:'', name:'', role:'admin', assigneeNames:[], tabs:null };
-signInAnonymously(auth)
-  .then(()=>{ paintUserChip(); subscribeAll(); })
-  .catch(e=>{
-    const c = (e && e.code) || '';
-    gateShow('gateNoAccess', c.includes('admin-restricted') || c.includes('operation-not-allowed')
-      ? 'Anonymous sign-in is not enabled in Firebase (Authentication → Sign-in method → Anonymous → Enable).'
-      : c.includes('unauthorized-domain') ? 'This website address is not in Firebase → Authentication → Settings → Authorized domains.'
-      : 'Could not connect to the database: ' + (e && e.message ? e.message : e));
-  });
+setPersistence(auth, browserLocalPersistence).catch(()=>{});
+const INV = readInvite();
+onAuthStateChanged(auth, user=>{
+  if(!user || user.isAnonymous){
+    stopSession();
+    if(user && user.isAnonymous){ signOut(auth).catch(()=>{}); }
+    if(INV && INV.e){ gate('createEmail').value = INV.e; gate('loginEmail').value = INV.e; gate('gateCreateHello').textContent = INV.n ? `Welcome, ${INV.n}!` : 'Welcome!'; gateShow('gateCreate'); }
+    else gateShow('gateLogin');
+    return;
+  }
+  if(!user.emailVerified){
+    gate('gateVerifyEmail').textContent = user.email;
+    gateShow('gateVerify');
+    return;
+  }
+  startFor(user);
+});
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <style>
@@ -1501,17 +1658,81 @@ details.cv-acc[open] > summary::before{content:'▾';}
   .topbar .global-search-input{width:150px;}
 }
 
+
+/* ── v10: bigger text by default + A− / A+ (per browser) ── */
+html{zoom:var(--ui-zoom,1.15);}
+.font-ctl{display:inline-flex;gap:2px;}
+.font-ctl .print-btn{padding-inline:9px;font-weight:800;}
+body.ro [onclick^="cpEdit"],body.ro [onclick^="cpDelete"],body.ro [onclick^="cpMove"],body.ro [onclick^="cpImportPick"],body.ro .cp-mini{display:none !important;}
+body.ro select[onchange^="cpSetField"]{pointer-events:none;opacity:.85;}
+#userChip b{font-weight:800;}
 </style>
+<script>
+(function(){
+  var STEPS=[0.9,1,1.08,1.15,1.25,1.35,1.5], DEF=1.15;
+  function get(){ try{ var v=parseFloat(localStorage.getItem('mocUiZoom')); return STEPS.indexOf(v)>=0?v:DEF; }catch(e){ return DEF; } }
+  function set(v){ document.documentElement.style.setProperty('--ui-zoom', v); try{ localStorage.setItem('mocUiZoom', v); }catch(e){} }
+  window.uiZoomStep=function(d){ var i=STEPS.indexOf(get()); i=Math.max(0,Math.min(STEPS.length-1,i+d)); set(STEPS[i]); if(window.showInfoToast) showInfoToast('🔠 Text size '+Math.round(STEPS[i]*100)+'%'); };
+  window.uiZoomReset=function(){ set(DEF); if(window.showInfoToast) showInfoToast('🔠 Text size reset'); };
+  set(get());
+  /* screenshots (Copy as image / PowerPoint) are taken at 100% so they are not shifted */
+  window.addEventListener('load', function(){
+    if(typeof window.html2canvas!=='function') return;
+    var orig=window.html2canvas;
+    window.html2canvas=function(el,opts){
+      var root=document.documentElement, prev=root.style.getPropertyValue('--ui-zoom');
+      root.style.setProperty('--ui-zoom',1);
+      var restore=function(){ root.style.setProperty('--ui-zoom', prev || get()); };
+      try{ var p=orig(el,opts); return p.then(function(c){ restore(); return c; }, function(e){ restore(); throw e; }); }catch(e){ restore(); throw e; }
+    };
+  });
+})();
+</script>
 
 </head>
 <body>
 <div id="authGate">
+<script>function gate_pw_focus(){ var p=document.getElementById("loginPassword"); if(p) p.focus(); }</script>
   <div class="gate-card">
-    <h2>MOC Dashboard</h2>
+    <h2>🔐 MOC Dashboard</h2>
+    <p class="gate-sub">Ideal Innovation House · authorised users only</p>
+    <div id="gateLogin" style="display:none;">
+      <label for="loginEmail">EMAIL</label>
+      <input id="loginEmail" type="email" autocomplete="username" placeholder="name@company.com" onkeydown="if(event.key==='Enter')gate_pw_focus()">
+      <label for="loginPassword">PASSWORD</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')gateSignIn()">
+      <button class="gate-btn" id="loginBtn" onclick="gateSignIn()">Sign in</button>
+      <div class="gate-msg" id="gateLoginMsg"></div>
+      <button class="gate-link" onclick="gateForgot()">Forgot password?</button><br>
+      <button class="gate-link" onclick="gateGo('gateCreate')">First time? Create your password →</button>
+      <div class="gate-foot">Data loads live after sign-in - nothing is stored inside this page.</div>
+    </div>
+    <div id="gateCreate" style="display:none;">
+      <p style="font-size:14px;color:var(--navy2);font-weight:700;margin:0 0 4px;" id="gateCreateHello">First time here</p>
+      <p class="gate-sub" style="margin-bottom:6px;">Use the email your admin added. We'll email you a link to confirm it.</p>
+      <label for="createEmail">EMAIL</label>
+      <input id="createEmail" type="email" autocomplete="username" placeholder="name@company.com">
+      <label for="createPassword">CHOOSE A PASSWORD (8+ characters)</label>
+      <input id="createPassword" type="password" autocomplete="new-password">
+      <label for="createPassword2">REPEAT PASSWORD</label>
+      <input id="createPassword2" type="password" autocomplete="new-password" onkeydown="if(event.key==='Enter')gateCreate()">
+      <button class="gate-btn" id="createBtn" onclick="gateCreate()">Create password</button>
+      <div class="gate-msg" id="gateCreateMsg"></div>
+      <button class="gate-link" onclick="gateGo('gateLogin')">← I already have a password</button>
+    </div>
+    <div id="gateVerify" style="display:none;">
+      <p style="font-size:14px;color:var(--navy2);font-weight:700;margin:0 0 6px;">📧 Confirm your email</p>
+      <p style="font-size:13px;line-height:1.55;margin:0;">We sent a link to <b id="gateVerifyEmail"></b>. Open it, then come back and click the button below. (Check spam if you don't see it.)</p>
+      <button class="gate-btn" onclick="gateVerified()">I've confirmed - continue</button>
+      <div class="gate-msg" id="gateVerifyMsg"></div>
+      <button class="gate-link" onclick="gateResend()">Send the link again</button><br>
+      <button class="gate-link" onclick="gateSignOut()">Use a different email</button>
+    </div>
     <div id="gateNoAccess" style="display:none;">
-      <p style="font-size:13.5px;color:var(--navy2);">⚠️ Cannot load the dashboard</p>
+      <p style="font-size:13.5px;color:var(--navy2);">⚠️ No access</p>
       <div class="gate-msg" id="gateNoAccessMsg"></div>
       <button class="gate-btn" onclick="location.reload()">Try again</button>
+      <button class="gate-link" id="gateNoAccessOut" style="display:none;" onclick="gateSignOut()">Sign out</button>
     </div>
     <div id="gateLoading" style="display:block;">
       <div class="gate-msg" id="gateLoadingMsg" style="color:var(--navy);">Connecting…</div>
@@ -1532,6 +1753,11 @@ details.cv-acc[open] > summary::before{content:'▾';}
       <input type="text" id="globalSearchInput" class="global-search-input" placeholder="🔍 Search epics, tasks, risks...">
       <div class="global-search-results" id="globalSearchResults"></div>
     </div>
+    <div class="hdr-dd" id="presenceBar" style="display:none;">
+      <button class="print-btn hdr-dd-btn" id="presDots" title="Who is online"></button>
+      <div class="hdr-dd-panel" style="min-width:260px;"><div style="font-size:11px;font-weight:800;color:var(--muted);padding:4px 6px 6px;letter-spacing:.06em;">ONLINE NOW</div><div id="presList"></div></div>
+    </div>
+    <div class="font-ctl" title="Text size"><button class="print-btn" onclick="uiZoomStep(-1)" aria-label="Smaller text">A−</button><button class="print-btn" onclick="uiZoomStep(1)" aria-label="Bigger text">A+</button></div>
     <button class="print-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
     <div class="hdr-dd" id="fileMenu">
       <button class="print-btn hdr-dd-btn" title="Import / Export / Print">📁 File ▾</button>
@@ -1540,6 +1766,16 @@ details.cv-acc[open] > summary::before{content:'▾';}
         <input type="file" id="importFileInput" accept=".xlsx,.xls" style="display:none;">
         <button class="print-btn desktop-only" data-can="exportData" id="exportAllBtn" title="Download all dashboard data as an Excel file">📥 Export to Excel</button>
         <button class="print-btn desktop-only" id="printBtn" title="Print or save this view as PDF">🖨️ Print / PDF</button>
+      </div>
+    </div>
+    <div class="hdr-dd" id="userMenuWrap">
+      <button class="print-btn hdr-dd-btn" id="userChip" title="Your account">👤 ▾</button>
+      <div class="hdr-dd-panel" style="min-width:230px;">
+        <div id="userMenuInfo" style="font-size:12.5px;line-height:1.6;padding:6px 10px 10px;border-bottom:1px solid var(--border);margin-bottom:6px;"></div>
+        <button class="print-btn" data-can="viewHistory" onclick="openHistory()">🕘 Change History</button>
+        <button class="print-btn" data-can="manageUsers" onclick="showTab('users')">👥 Users &amp; Access</button>
+        <button class="print-btn" onclick="uiZoomReset()">🔠 Reset text size</button>
+        <button class="print-btn" onclick="FB.signOut()">🚪 Sign out</button>
       </div>
     </div>
     <div class="meta-right">
@@ -1581,10 +1817,11 @@ details.cv-acc[open] > summary::before{content:'▾';}
     <button class="tabbtn" data-tab="copilot" data-can="viewCopilot">✨ Copilot Rollout</button>
     <div class="sb-sub" id="cpSubnav" data-can="viewCopilot"></div>
 
-    <hr class="sidebar-divider pm-only">
+    <hr class="sidebar-divider" data-can="viewAdmin">
 
-    <div class="label pm-only">Admin View</div>
-    <button class="tabbtn pm-only" data-tab="email">✉️ Report Email</button>
+    <div class="label" data-can="viewAdmin">Admin View</div>
+    <button class="tabbtn" data-tab="email" data-can="viewAdmin">✉️ Report Email</button>
+    <button class="tabbtn" data-tab="users" data-can="manageUsers">👥 Users &amp; Access</button>
 
     <hr class="sidebar-divider" data-can="viewClientTab">
     <div class="label" data-can="viewClientTab">Client</div>
@@ -1696,6 +1933,9 @@ details.cv-acc[open] > summary::before{content:'▾';}
       <div id="emailLockedArea"></div>
       <div id="emailUnlockedArea" style="display:none;"></div>
     </div>
+
+    <!-- USERS & ACCESS (admin) -->
+    <div class="view" id="view-users"></div>
 
   </div>
 </div>
@@ -2356,6 +2596,10 @@ const CP_PAGES = [ ['overview','Overview','📊'], ['plan','Project Plan','🗓�
   ['support','Support & Comms','💬'], ['risks','Risk Register','⚠️'], ['users','Pilot Users','👥'], ['prompts','Prompt Library','💡'] ];   // v9: RACI, Weekly Meetings, Surveys & Value removed (data kept)
 let cpPage = (()=>{ try{ return localStorage.getItem('cpPage') || 'overview'; }catch(e){ return 'overview'; } })();
 let cpPlanView = 'list', cpPlanQ = '', cpPlanSt = '', cpUserQ = '', cpUserF = '', cpSupF = '';
+['cpEdit','cpSave','cpDelete','cpSetField','cpMove','cpImportPick'].forEach(n=>{
+  const f = window[n]; if(typeof f !== 'function') return;
+  window[n] = function(...a){ if(myLevel() < 3) return denied(); return f.apply(this, a); };
+});
 window.cpGo = function(p, opts){ cpPage = p; try{ localStorage.setItem('cpPage', p); }catch(e){} window._cpFocus = (opts && opts.focus) || null; renderCopilot(); if(!window._cpFocus) window.scrollTo(0,0); };
 window.cpSet = function(k, v){ if(k==='planView') cpPlanView = v; if(k==='planQ') cpPlanQ = v; if(k==='planSt') cpPlanSt = v; if(k==='userQ') cpUserQ = v; if(k==='userF') cpUserF = v; if(k==='supF') cpSupF = v; renderCopilot(k); };
 window.cpOpenRisk = function(id){ cpGo('risks', { focus:id }); };
@@ -3024,7 +3268,7 @@ function formatLastUpdate(d){
   const pad = n => String(n).padStart(2,'0');
   const h = d.getHours(), m = d.getMinutes();
   const ampm = h >= 12 ? 'PM' : 'AM', h12 = h % 12 || 12;
-  return `Last Update: ${fmtDate(d)} · ${h12}:${pad(m)} ${ampm}`;
+  return `Last Update: ${fmtDate(d)} · ${h12}:${pad(m)} ${ampm}` + (window._lastUpdateBy ? ' · ' + personName(window._lastUpdateBy) : '');
 }
 
 function paintLastUpdate(){
@@ -3133,10 +3377,11 @@ function setLastUpdate(){
 /* =====================================================================
    TAB SWITCHING
    ===================================================================== */
-const ALL_TABS = ["timeline","mape","overview","workstreams","delta","tasks","teamlens","riskregister","risk","email","client","copilot"];
+const ALL_TABS = ["timeline","mape","overview","workstreams","delta","tasks","teamlens","riskregister","risk","email","users","client","copilot"];
 function showTab(tab){
   if(tab==='copilot' && typeof cpNavOpen==='function' && !cpNavIsOpen) cpNavOpen(true);   // opening Copilot unfolds its pages
   if(tab==='copilot' && typeof renderCopilot==='function') renderCopilot();
+  if(tab==='users' && typeof renderUsers==='function') renderUsers();
   $$('.tabbtn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   ALL_TABS.forEach(t=>{
     const el = document.getElementById('view-'+t);
@@ -6239,11 +6484,11 @@ if(_mbBtn) _mbBtn.addEventListener('click', openMobileMenu);
    v8 - ROLES & PERMISSIONS (UI side). The real enforcement is in
    firestore.rules on the server; this layer only hides what a role
    can't do so nobody clicks into a "permission denied".
-   Roles: admin(4) > manager(3) > member(2) > viewer(1)
+   Roles (v10): admin(4) > editor(3) > viewer(1).  (manager / member kept only as old aliases)
    ===================================================================== */
 window.CURRENT_USER = window.CURRENT_USER || null;   // set by the Firebase module after login
-const ROLE_LEVEL = { client:0, viewer:1, member:2, manager:3, admin:4 };   // client = outside the team: Client View only
-const ROLE_LIST  = ['admin','manager','member','viewer'];
+const ROLE_LEVEL = { client:0, viewer:1, member:2, editor:3, manager:3, admin:4 };   // v10 roles: admin / editor / viewer
+const ROLE_LIST  = ['admin','editor','viewer'];
 function myLevel(){ return window.CURRENT_USER ? (ROLE_LEVEL[window.CURRENT_USER.role] || 0) : 0; }
 function isClient(){ return !!window.CURRENT_USER && window.CURRENT_USER.role === 'client'; }
 /* Tabs a client may be given (they can't read tasks / people, so only summary tabs) */
@@ -6259,7 +6504,7 @@ function myNames(){ return window.CURRENT_USER ? (window.CURRENT_USER.assigneeNa
 function isMineTask(t){ return !!t && myNames().includes(t.assignee); }
 function isMyEpic(e){ return !!e && myNames().includes(e.lead); }
 const CAN = {
-  viewPM:           ()=> myLevel() >= 2,
+  viewPM:           ()=> myLevel() >= 1,   // viewers see PM View read-only
   addTask:          ()=> myLevel() >= 2,
   editTask:         t => myLevel() >= 3 || (myLevel() >= 2 && isMineTask(t)),
   reassignTask:     ()=> myLevel() >= 3,
@@ -6273,17 +6518,19 @@ const CAN = {
   closeWeek:        ()=> myLevel() >= 3,
   exportData:       ()=> myLevel() >= 2,
   importData:       ()=> myLevel() >= 4,
-  manageUsers:      ()=> false,   // v9: no users
+  manageUsers:      ()=> myLevel() >= 4,
+  viewAdmin:        ()=> myLevel() >= 4,
   viewGaps:         ()=> false,   // v9: Missing Info tab removed
-  viewCopilot:      ()=> myLevel() >= 2 && !isClient(),
+  viewCopilot:      ()=> myLevel() >= 1 && !isClient(),
   viewClientTab:    ()=> myLevel() >= 3 || isClient(),
-  viewHistory:      ()=> false    // v9: no change history
+  viewHistory:      ()=> myLevel() >= 3
 };
 function denied(){ showInfoToast('⛔ Your role cannot do this.'); }
 
 /* Hide/show controls everywhere (runs after every DOM change) */
 function applyPermissionsUI(){
   window._fbIsAdmin = myLevel() >= 3;          // legacy flag used by older handlers (delete / duplicate)
+  document.body.classList.toggle('ro', myLevel() < 3);   // viewers: read-only (hides edit controls)
   document.querySelectorAll('[data-can]').forEach(el=>{
     const fn = CAN[el.dataset.can];
     el.style.display = (fn && fn()) ? '' : 'none';
@@ -6530,7 +6777,9 @@ function renderUsers(){
   if(!CAN.manageUsers()){ el.innerHTML = ''; return; }
   const all = window.USERS_DATA || [];
   const clients = all.filter(u=>u.role==='client'), team = all.filter(u=>u.role!=='client');
-  const toggle = `<div class="view-toggle" style="margin:0 0 14px;">
+  usersSection = 'team';
+  const toggle = '';
+  const _unusedToggle = `<div class="view-toggle" style="margin:0 0 14px;">
       <button class="${usersSection==='team'?'active':''}" onclick="setUsersSection('team')">👥 Team (${team.length})</button>
       <button class="${usersSection==='clients'?'active':''}" onclick="setUsersSection('clients')">🏢 Clients (${clients.length})</button></div>`;
   if(usersSection === 'clients'){
@@ -6560,7 +6809,7 @@ function renderUsers(){
     <tr data-email="${escapeHtml(u.email||'')}">
       <td>${isNew ? '<input class="u-email" type="email" placeholder="name@company.com" style="width:100%;">' : `<b>${escapeHtml(u.email)}</b>`}</td>
       <td><input class="u-name" type="text" value="${escapeHtml(u.name||'')}" style="width:100%;"></td>
-      <td><select class="u-role">${opts(u.role||'member')}</select></td>
+      <td><select class="u-role">${opts(u.role==='manager'?'editor':u.role==='member'?'editor':(u.role||'editor'))}</select></td>
       <td><input class="u-names" type="text" list="teamLeadsList" value="${escapeHtml((u.assigneeNames||[]).join(', '))}" placeholder="e.g. Omar Alsmadi" style="width:100%;"></td>
       <td>${tabsPickerHTML(u, false)}</td>
       <td style="text-align:center;"><input class="u-active" type="checkbox" ${u.active!==false?'checked':''}></td>
@@ -6572,14 +6821,15 @@ function renderUsers(){
     <p class="view-sub">Only emails on this list can open the dashboard. After you add someone, they open the dashboard → <b>First time? Create your password</b> with the same email → verify the email → they're in.</p>
     ${toggle}
     <div class="card" style="font-size:12.5px;line-height:1.7;">
-      <b>admin</b> - everything, incl. users & import · <b>manager</b> - edit any task / epic / milestone / risk, delete, Close Week ·
-      <b>member</b> - add tasks for themselves, edit only their own tasks, raise risks · <b>viewer</b> - read-only Weekly Report (no PM View).<br>
+      <b>admin</b> - everything, incl. Users &amp; Access, Report Email, Client View settings and Import ·
+      <b>editor</b> - add / edit / delete tasks, epics, milestones, risks, MAPE and Copilot data, Close Week, see Change History ·
+      <b>viewer</b> - read-only: sees every page, cannot change anything.<br>
       <b>Assignee name(s)</b> must match the name used in the tasks' Assignee column - that is how the dashboard knows which tasks are "theirs". Add "BA Team" for BA members.
     </div>
     <datalist id="teamLeadsList">${TEAM_LEADS.map(n=>`<option value="${escapeHtml(n)}">`).join('')}</datalist>
     <div class="card" style="overflow-x:auto;">
       <table class="ws-table"><tr><th>Email</th><th>Display name</th><th>Role</th><th>Assignee name(s)</th><th>Tabs</th><th>Active</th><th></th></tr>
-        ${rowHTML({role:'member', active:true}, true)}
+        ${rowHTML({role:'editor', active:true}, true)}
         ${team.map(u=>rowHTML(u,false)).join('')}
       </table>
     </div>`;
@@ -6600,7 +6850,7 @@ window.saveUserRow = async function(btn){
   if(window.CURRENT_USER && email.toLowerCase() === window.CURRENT_USER.email && (u.role !== 'admin' || !u.active)){
     if(!confirm('You are removing your own admin access. Continue?')) return;
   }
-  try{ await FB.saveUser(u); showInfoToast('✓ Saved ' + email); }
+  try{ await FB.saveUser(u); showInfoToast('✓ Saved ' + email + (tr.querySelector('.u-email') ? ' - now click 📋 Invite and send it to them' : '')); }
   catch(e){ showInfoToast('⛔ ' + (e.code || e.message)); }
 };
 
