@@ -1,4 +1,4 @@
-<!-- MOC Dashboard | v10.1 (2026-10-13): text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
+<!-- MOC Dashboard | v10.3 (2026-10-15): Copilot risks show on their linked phase | v10.2: bolder sidebar menu | v10.1: text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -1666,6 +1666,16 @@ details.cv-acc[open] > summary::before{content:'▾';}
 body.ro [onclick^="cpEdit"],body.ro [onclick^="cpDelete"],body.ro [onclick^="cpMove"],body.ro [onclick^="cpImportPick"],body.ro .cp-mini{display:none !important;}
 body.ro select[onchange^="cpSetField"]{pointer-events:none;opacity:.85;}
 #userChip b{font-weight:800;}
+/* ── v10.2 sidebar: clearer, bolder menu (same spacing / alignment) ── */
+.sidebar,.sidebar .tabbtn,.sidebar .sb-sub-btn,.sidebar .label{font-family:'Segoe UI Variable Text','Segoe UI',system-ui,-apple-system,Tahoma,Arial,sans-serif !important;}
+.sidebar .tabbtn{font-weight:650;font-size:calc(13.5px * var(--fa,1) + var(--fb,0px));color:#EEF3FB;letter-spacing:.1px;}
+.sidebar .tabbtn:hover{background:rgba(255,255,255,.10);color:#fff;}
+.sidebar .tabbtn.active{font-weight:800;color:var(--navy2);}
+.sidebar .tabbtn .tb-ic{font-size:1.05em;}
+.sidebar .label{font-weight:800;color:#AFC0DA;letter-spacing:.9px;font-size:calc(10.5px * var(--fa,1) + var(--fb,0px));}
+.sidebar .sb-sub-btn{font-weight:600;color:#D5DFEE;}
+.sidebar .sb-sub-btn.on{font-weight:800;color:var(--navy2);}
+.sidebar .cl-item{font-weight:600;color:#D5DFEE;}
 .pres-dot{font-size:10px !important;}
 .sidebar .tabbtn{white-space:nowrap;}
 </style>
@@ -2453,7 +2463,7 @@ const CP_SCHEMA = {
   cp_risks: { title:'Risk', prefix:'RG', fields:[ {k:'id',l:'Risk ID (e.g. RG03)',t:'text',newOnly:1}, {k:'status',l:'Status',t:'select',o:['Open','In Progress','Mitigated','Closed'],d:'Open'},
     {k:'description',l:'Risk',t:'textarea',req:1}, {k:'category',l:'Category',t:'text'}, {k:'owner',l:'Owner',t:'text'},
     {k:'likelihood',l:'Likelihood',t:'select',o:['Low','Medium','High'],d:'Medium'}, {k:'impact',l:'Impact',t:'select',o:['Low','Medium','High'],d:'Medium'},
-    {k:'phase',l:'Delays this phase',t:'phase',blank:1}, {k:'delayTo',l:'…to this date (expected)',t:'date'}, {k:'mitigation',l:'Mitigation',t:'textarea'} ] },
+    {k:'phase',l:'Linked phase (shows on the Project Plan)',t:'phase',blank:1}, {k:'delayTo',l:'Pushes that phase\'s due date to (optional)',t:'date'}, {k:'mitigation',l:'Mitigation',t:'textarea'} ] },
   cp_raci: { title:'RACI row', prefix:'R', fields:[ {k:'activity',l:'Activity',t:'text',req:1,full:1},
     {k:'iih',l:'IIH',t:'select',o:CP_RACI_OPTS}, {k:'noventiq',l:'Noventiq',t:'select',o:CP_RACI_OPTS}, {k:'moc',l:'MoC',t:'select',o:CP_RACI_OPTS} ] },
   cp_channels: { title:'Support channel', prefix:'CH', fields:[ {k:'name',l:'Channel',t:'text',req:1}, {k:'status',l:'Status',t:'select',o:['Not Started','In Progress','Live','Paused'],d:'Not Started'},
@@ -2503,6 +2513,7 @@ function cpPhaseStats(n){ const ts = CP_TASKS.filter(t=>+t.phase===+n); const do
   return { total:ts.length, done, ip: ts.filter(t=>t.status==='In Progress').length, bl: ts.filter(t=>t.status==='Blocked').length, pct: ts.length ? Math.round(done*100/ts.length) : 0 }; }
 function cpPhaseStatus(s){ return s.total && s.done===s.total ? 'Completed' : (s.done || s.ip) ? 'In Progress' : s.bl ? 'Blocked' : 'Not Started'; }
 function cpRiskOpen(r){ return !/closed|mitigated/i.test(r.status || ''); }
+function cpPhaseRisks(n, skip){ return CP_RISKS.filter(r=>r.phase !== '' && r.phase != null && +r.phase===+n && !(skip && skip.includes(r.id))).sort((a,b)=>(cpRiskOpen(b)-cpRiskOpen(a)) || String(a.id).localeCompare(String(b.id))); }
 function cpPhaseSlip(n){ const p = CP_PHASES.find(x=>+x.n===+n);
   const rs = CP_RISKS.filter(r=>+r.phase===+n && r.delayTo && (!p || !p.due || r.delayTo > p.due)).sort((a,b)=>String(b.delayTo).localeCompare(String(a.delayTo)));
   return rs.length ? { date: rs[0].delayTo, risks: rs.map(r=>r.id), open: rs.some(cpRiskOpen) } : null; }
@@ -2606,6 +2617,7 @@ function cpPhaseNode(p){
     <span class="cp-pill" style="color:#fff;background:${cc};">${st==='Completed' ? 'Complete' : s.pct + '% · ' + st.toLowerCase()}</span>
     <div class="cp-tl-dates">${dates}</div>
     ${slip ? slip.risks.map(r=>cpRiskChip(r, true)).join(' ') : ''}
+    ${cpPhaseRisks(p.n, slip && slip.risks).filter(cpRiskOpen).map(r=>cpRiskChip(r.id, true)).join(' ')}
   </div>`;
 }
 function cpFunnel(){
@@ -2673,7 +2685,7 @@ const CP_RENDER = {
       return `<div class="cp-ph">
         <div class="cp-ph-h"><span class="cp-ph-n">${p.n}</span><b style="font-size:calc(15px * var(--fa,1) + var(--fb,0px));">${escapeHtml(p.name)}</b> ${cpPill(cpPhaseStatus(s))}
           <span style="color:var(--muted);font-size:calc(12.5px * var(--fa,1) + var(--fb,0px));">${s.done}/${s.total} done · ${s.pct}%</span>
-          <span style="font-size:calc(12.5px * var(--fa,1) + var(--fb,0px));">${slip ? `<s style="color:var(--muted);">${cpFmt(p.due)}</s> → <b style="color:${slip.open ? 'var(--red)' : 'var(--muted)'};">${cpFmt(slip.date)}</b> ${slip.risks.map(r=>cpRiskChip(r)).join(' ')}` : p.due ? '🎯 ' + cpFmt(p.due) : ''}</span>
+          <span style="font-size:calc(12.5px * var(--fa,1) + var(--fb,0px));">${slip ? `<s style="color:var(--muted);">${cpFmt(p.due)}</s> → <b style="color:${slip.open ? 'var(--red)' : 'var(--muted)'};">${cpFmt(slip.date)}</b> ${slip.risks.map(r=>cpRiskChip(r)).join(' ')}` : p.due ? '🎯 ' + cpFmt(p.due) : ''} ${cpPhaseRisks(p.n, slip && slip.risks).map(r=>cpRiskChip(r.id)).join(' ')}</span>
           <span style="flex:1"></span>
           <button class="btn secondary cp-mini no-shot" onclick="window._cpDefPhase=${p.n};cpEdit('cp_tasks')" title="Add an activity to this phase">＋</button>${cpEditBtn('cp_phases', p.id, 'Edit phase name / due date')}</div>
         <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;">
@@ -2732,8 +2744,8 @@ const CP_RENDER = {
 
   risks(){
     const lv = { Low:1, Medium:2, High:3 };
-    return cpHead('Risk Register', 'Open risks and approvals. A risk that <b>delays a phase</b> moves that phase\'s date on the Overview timeline, with a link back here - and it stays linked after the risk is closed (clear its date to remove the delay).', cpAddBtn('cp_risks','Risk')) + `
-      <div class="card" style="overflow-x:auto;"><table class="cp-table"><tr><th>ID</th><th>Risk</th><th>Likelihood · Impact</th><th>Owner</th><th>Delays</th><th>Status</th><th class="no-shot"></th></tr>
+    return cpHead('Risk Register', 'Open risks and approvals. Pick a <b>Linked phase</b> and the risk shows on that phase in the Project Plan and Overview. Add a <b>delay date</b> later than the phase due date and it also moves that phase\'s date - the link stays after the risk is closed (clear its date to remove the delay).', cpAddBtn('cp_risks','Risk')) + `
+      <div class="card" style="overflow-x:auto;"><table class="cp-table"><tr><th>ID</th><th>Risk</th><th>Likelihood · Impact</th><th>Owner</th><th>Phase · delay</th><th>Status</th><th class="no-shot"></th></tr>
         ${[...CP_RISKS].sort((a,b)=>String(a.id).localeCompare(String(b.id))).map(r=>{ const sc = (lv[r.likelihood]||2) * (lv[r.impact]||2);
           return `<tr id="cp-row-${escapeHtml(r.id)}"><td><b>${escapeHtml(r.id)}</b><span class="sub">${escapeHtml(r.category||'')}</span></td>
             <td>${escapeHtml(r.description||'')}${r.mitigation ? `<span class="sub"><b>Mitigation:</b> ${escapeHtml(r.mitigation)}</span>` : ''}</td>
