@@ -1,4 +1,4 @@
-<!-- MOC Dashboard | v10.5 (2026-10-15): Inter font for the left menu | v10.4: Client View Copilot risks (open + mitigated) | v10.3: Copilot risks show on their linked phase | v10.2: bolder sidebar menu | v10.1: text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
+<!-- MOC Dashboard | v10.6 (2026-10-15): compact fixed-size left menu | v10.5: Inter font for the left menu | v10.4: Client View Copilot risks (open + mitigated) | v10.3: Copilot risks show on their linked phase | v10.2: bolder sidebar menu | v10.1: text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -1551,7 +1551,7 @@ details.cv-acc[open] > summary::before{content:'▾';}
     position:sticky !important;
     top:var(--header-h,74px);
     transform:none !important;
-    width:calc(220px + var(--fb,0px) * 9) !important;
+    width:220px !important;
     box-shadow:none !important;
   }
   .main{margin-left:0 !important;}
@@ -1679,6 +1679,13 @@ body.ro select[onchange^="cpSetField"]{pointer-events:none;opacity:.85;}
 /* ── v10.2 sidebar: clearer, bolder menu (same spacing / alignment) ── */
 /* v10.5: Inter for the left menu only - overrides the page-wide Sakkal rule on every element inside the menu */
 .sidebar,.sidebar *{font-family:'Inter','Segoe UI',Arial,sans-serif !important;}
+/* v10.6: menu text is a fixed, compact size - A-/A+ only changes the page content, never the menu */
+.sidebar .tabbtn{font-size:13px !important;padding-top:9px;padding-bottom:9px;}
+.sidebar .tabbtn .tb-ic{font-size:14px !important;}
+.sidebar .label,.sidebar .nav-label{font-size:10px !important;}
+.sidebar .sb-sub-btn{font-size:12px !important;}
+.sidebar .sb-sub-btn span{font-size:12px !important;}
+.sidebar .cl-item{font-size:10px !important;}
 .sidebar .tabbtn{font-weight:600;font-size:calc(13.5px * var(--fa,1) + var(--fb,0px));color:#EEF3FB;letter-spacing:.1px;}
 .sidebar .tabbtn:hover{background:rgba(255,255,255,.10);color:#fff;}
 .sidebar .tabbtn.active{font-weight:800;color:var(--navy2);}
