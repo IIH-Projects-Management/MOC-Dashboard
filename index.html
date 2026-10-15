@@ -1,4 +1,4 @@
-<!-- MOC Dashboard | v10.4 (2026-10-15): Client View Copilot risks (open + mitigated) | v10.3: Copilot risks show on their linked phase | v10.2: bolder sidebar menu | v10.1: text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
+<!-- MOC Dashboard | v10.5 (2026-10-15): Inter font for the left menu | v10.4: Client View Copilot risks (open + mitigated) | v10.3: Copilot risks show on their linked phase | v10.2: bolder sidebar menu | v10.1: text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -615,6 +615,8 @@ onAuthStateChanged(auth, user=>{
 });
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap">
 <style>
 
 :root{
@@ -1675,8 +1677,9 @@ body.ro select[onchange^="cpSetField"]{pointer-events:none;opacity:.85;}
 .cv-cprisk-desc{font-size:calc(13.5px * var(--fa,1) + var(--fb,0px));line-height:1.5;}
 .cv-cprisk-mit{font-size:calc(12.5px * var(--fa,1) + var(--fb,0px));color:var(--muted);margin-top:4px;line-height:1.5;}
 /* ── v10.2 sidebar: clearer, bolder menu (same spacing / alignment) ── */
-.sidebar,.sidebar .tabbtn,.sidebar .sb-sub-btn,.sidebar .label{font-family:'Segoe UI Variable Text','Segoe UI',system-ui,-apple-system,Tahoma,Arial,sans-serif !important;}
-.sidebar .tabbtn{font-weight:650;font-size:calc(13.5px * var(--fa,1) + var(--fb,0px));color:#EEF3FB;letter-spacing:.1px;}
+/* v10.5: Inter for the left menu only - overrides the page-wide Sakkal rule on every element inside the menu */
+.sidebar,.sidebar *{font-family:'Inter','Segoe UI',Arial,sans-serif !important;}
+.sidebar .tabbtn{font-weight:600;font-size:calc(13.5px * var(--fa,1) + var(--fb,0px));color:#EEF3FB;letter-spacing:.1px;}
 .sidebar .tabbtn:hover{background:rgba(255,255,255,.10);color:#fff;}
 .sidebar .tabbtn.active{font-weight:800;color:var(--navy2);}
 .sidebar .tabbtn .tb-ic{font-size:1.05em;}
