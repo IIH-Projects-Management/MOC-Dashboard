@@ -1,4 +1,4 @@
-<!-- MOC Dashboard | v10.3 (2026-10-15): Copilot risks show on their linked phase | v10.2: bolder sidebar menu | v10.1: text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
+<!-- MOC Dashboard | v10.4 (2026-10-15): Client View Copilot risks (open + mitigated) | v10.3: Copilot risks show on their linked phase | v10.2: bolder sidebar menu | v10.1: text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -1666,6 +1666,14 @@ details.cv-acc[open] > summary::before{content:'▾';}
 body.ro [onclick^="cpEdit"],body.ro [onclick^="cpDelete"],body.ro [onclick^="cpMove"],body.ro [onclick^="cpImportPick"],body.ro .cp-mini{display:none !important;}
 body.ro select[onchange^="cpSetField"]{pointer-events:none;opacity:.85;}
 #userChip b{font-weight:800;}
+.cv-cprisk{margin-top:14px;}
+.cv-cprisk-n{font-weight:600;color:var(--muted);font-size:calc(12px * var(--fa,1) + var(--fb,0px));margin-inline-start:8px;text-transform:none;letter-spacing:0;}
+.cv-cprisk-row{border:1px solid var(--border);border-inline-start:4px solid;border-radius:10px;padding:10px 14px;margin-bottom:8px;}
+.cv-cprisk-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:4px;}
+.cv-cprisk-id{font-size:calc(13px * var(--fa,1) + var(--fb,0px));color:var(--navy2);}
+.cv-cprisk-meta{color:var(--muted);font-size:calc(12px * var(--fa,1) + var(--fb,0px));}
+.cv-cprisk-desc{font-size:calc(13.5px * var(--fa,1) + var(--fb,0px));line-height:1.5;}
+.cv-cprisk-mit{font-size:calc(12.5px * var(--fa,1) + var(--fb,0px));color:var(--muted);margin-top:4px;line-height:1.5;}
 /* ── v10.2 sidebar: clearer, bolder menu (same spacing / alignment) ── */
 .sidebar,.sidebar .tabbtn,.sidebar .sb-sub-btn,.sidebar .label{font-family:'Segoe UI Variable Text','Segoe UI',system-ui,-apple-system,Tahoma,Arial,sans-serif !important;}
 .sidebar .tabbtn{font-weight:650;font-size:calc(13.5px * var(--fa,1) + var(--fb,0px));color:#EEF3FB;letter-spacing:.1px;}
@@ -2968,7 +2976,11 @@ function cpPayload(){
     phases: ph.map(p=>{ const s = cpPhaseStats(p.n), sl = cpPhaseSlip(p.n), st = cpPhaseStatus(s);
       return { n:p.n, name:p.name, desc:p.desc||'', by:p.due||null, expected: sl ? sl.date : null, expectedOpen: sl ? sl.open : null, total:s.total, done:s.done, status: st==='Completed' ? 'Completed' : st==='Not Started' ? 'Planned' : 'In progress' }; }),
     pilot: { users:U.length, licensed:cnt(u=>u.license==='Assigned'), access:cnt(u=>/^yes$/i.test(u.access_tested||'')), trained:cnt(u=>u.training==='Completed'),
-      pre:cnt(u=>u.pre_survey==='Completed'), mid:cnt(u=>u.mid_survey==='Completed'), post:cnt(u=>u.post_survey==='Completed'), ready:cnt(cpUserReady), active:cnt(u=>u.usage_status==='Active') } };
+      pre:cnt(u=>u.pre_survey==='Completed'), mid:cnt(u=>u.mid_survey==='Completed'), post:cnt(u=>u.post_survey==='Completed'), ready:cnt(cpUserReady), active:cnt(u=>u.usage_status==='Active') },
+    risks: CP_RISKS.filter(r=>!/closed/i.test(r.status||''))
+      .sort((a,b)=>(/mitigated/i.test(a.status||'') - /mitigated/i.test(b.status||'')) || String(a.id).localeCompare(String(b.id)))
+      .map(r=>({ id:r.id, status:r.status||'Open', description:r.description||'', owner:r.owner||'', likelihood:r.likelihood||'', impact:r.impact||'',
+                 mitigation:r.mitigation||'', phase: (r.phase!==''&&r.phase!=null) ? cpPhaseName(r.phase) : '', delayTo: r.delayTo||null })) };
 }
 
 
@@ -7204,6 +7216,20 @@ function renderClientView(){
           </div>`; }).join('')}
         ${CP.pilot && CP.pilot.users ? `<div class="cv-pilot">${[['users','Pilot users'],['licensed','Licensed'],['trained','Trained'],['ready','Ready to start'],['active','Using Copilot']].map(([k,l])=>`<div><b>${CP.pilot[k]||0}</b><span>${l}</span></div>`).join('')}</div>` : ''}
       </div>
+      ${CP.fromWorkspace ? (()=>{ const R = CP.risks || [];
+        const sc = s => /mitigated/i.test(s) ? ['#1E7F4C','#E4F5EB'] : /progress/i.test(s) ? ['#B4790A','#FBF0DE'] : ['#C0392B','#FBEAE8'];
+        const nOpen = R.filter(r=>!/mitigated/i.test(r.status)).length, nMit = R.length - nOpen;
+        return `<div class="card cv-cprisk">
+          <h3 class="cv-cap">Risks &amp; approvals <span class="cv-cprisk-n">${nOpen} open · ${nMit} mitigated</span></h3>
+          ${R.length ? R.map(r=>{ const c = sc(r.status); return `<div class="cv-cprisk-row" style="border-inline-start-color:${c[0]};">
+              <div class="cv-cprisk-top"><b class="cv-cprisk-id">${escapeHtml(r.id)}</b><span class="cp-pill" style="color:${c[0]};background:${c[1]};">${escapeHtml(r.status)}</span>
+                ${r.phase ? `<span class="cv-cprisk-meta">${escapeHtml(r.phase)}${r.delayTo ? ` · expected ${fmtDate(new Date(r.delayTo + 'T00:00:00'))}` : ''}</span>` : ''}
+                ${r.owner ? `<span class="cv-cprisk-meta">Owner: ${escapeHtml(r.owner)}</span>` : ''}
+                ${r.impact ? `<span class="cv-cprisk-meta">Impact: ${escapeHtml(r.impact)}</span>` : ''}</div>
+              <div class="cv-cprisk-desc">${escapeHtml(r.description)}</div>
+              ${r.mitigation ? `<div class="cv-cprisk-mit"><b>${/mitigated/i.test(r.status) ? 'Mitigated by' : 'Mitigation'}:</b> ${escapeHtml(r.mitigation)}</div>` : ''}
+            </div>`; }).join('') : '<div class="ba-ok">✓ No open or mitigated risks.</div>'}
+        </div>`; })() : ''}
     </div></section>
 
     <section class="cv-sec report-zone"><button class="zone-shot-btn" onclick="captureSlide(this.nextElementSibling)" title="Copy this section as an image for a slide">📷 Copy as Image</button><div class="cv-slide">
