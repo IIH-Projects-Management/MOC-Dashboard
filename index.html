@@ -1741,6 +1741,9 @@ body.ro select[onchange^="cpSetField"]{pointer-events:none;opacity:.85;}
 .mph-st i{ width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-style:normal; font-size:11.5px; font-weight:600; background:#EDEFF3; color:#33424F; }
 .mph b{ font-size:calc(16px * var(--fa,1) + var(--fb,0px)); font-weight:600; color:var(--moc-navy); }
 .mph-pc{ font-size:calc(34px * var(--fa,1) + var(--fb,0px)); font-weight:300; letter-spacing:-.02em; color:var(--moc-navy); font-variant-numeric:tabular-nums; line-height:1.1; }
+.mph-pc small, .mot-pc small{ display:block; font-size:calc(11.5px * var(--fa,1) + var(--fb,0px)); font-weight:400; letter-spacing:0; color:var(--moc-muted); margin-top:3px; line-height:1.3; }
+.mph.now .mph-pc small{ color:#8A6431; }
+body.dark .mph-pc small, body.dark .mot-pc small{ color:var(--muted); }
 .mph-bar{ display:block; height:4px; background:#EDEFF3; border-radius:2px; } .mph-bar i{ display:block; height:100%; border-radius:2px; background:var(--moc-navy); }
 .mph-meta{ font-size:calc(12.5px * var(--fa,1) + var(--fb,0px)); color:var(--moc-muted); }
 .mph.done .mph-st i{ background:var(--moc-navy); color:#fff; }
@@ -1768,6 +1771,28 @@ body.dark .mph{ background:var(--surface); } body.dark .mph.now{ background:#2A2
 body.dark .mph b, body.dark .mph-pc, body.dark .mot b, body.dark .mot-pc, body.dark .mh3, body.dark .mstatus, body.dark .view-title{ color:var(--text) !important; }
 body.dark .mphases, body.dark .mph, body.dark .mot{ border-color:var(--border); }
 
+
+/* v11 · header fit: same items, laid out to fill the width; on narrower screens the controls wrap instead of running off the page */
+.topbar, .topbar *:not(svg):not(path){ font-family:'Inter','Noto Kufi Arabic','Segoe UI',Arial,sans-serif !important; }
+.topbar{ padding:12px 24px !important; column-gap:24px !important; row-gap:10px !important; }
+.topbar .brand{ flex:0 1 auto; min-width:0; }
+.topbar .meta{ flex:1 1 640px !important; flex-wrap:wrap !important; justify-content:flex-end; gap:8px !important; min-width:0; }
+.topbar .global-search-wrap{ flex:1 1 220px; min-width:180px; max-width:420px; }
+.topbar .global-search-input{ width:100% !important; box-sizing:border-box; }
+.topbar .meta-right{ margin-inline-start:auto; min-width:0 !important; }
+.topbar .meta-right .last-update-line{ white-space:normal !important; }
+/* below 1700px: row 1 = logo + title on the left, date on the right; row 2 = search (fills) + the buttons */
+@media (max-width:1699px){
+  .topbar .meta{ display:contents !important; }
+  .topbar .brand{ order:0; }
+  .topbar .meta > *{ order:3; }
+  .topbar .meta > .meta-right, .topbar #mobileMenuBtn{ order:1; }
+  .topbar::after{ content:''; order:2; flex-basis:100%; height:0; }
+  .topbar{ justify-content:flex-start !important; column-gap:8px !important; }
+  .topbar .brand{ margin-inline-end:16px; }
+  .topbar .global-search-wrap{ max-width:none !important; flex:1 1 260px !important; margin-inline-end:8px; }
+}
+@media (max-width:860px){ .topbar{ padding:10px 14px !important; column-gap:8px !important; } .topbar .global-search-wrap{ flex-basis:100%; } .topbar .meta-right{ text-align:left !important; margin-inline-start:0; } }
 /* ════════ v11 · admin panel ════════ */
 #kpiStrip{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:0 0 22px; }
 #kpiStrip[hidden]{ display:none; }
@@ -4672,6 +4697,7 @@ function renderTimelineInitiative(){
   var others = items.filter(function(x){ return phases.indexOf(x) < 0; });
   var current = phases.filter(function(x){ return x.pct < 100 && !x.late && x.pct > 0; })[0] || phases.filter(function(x){ return x.pct < 100 && !x.late; })[0] || null;
   var range = function(x){ return x.start ? fmt(x.start) + ' – ' + fmt(x.end) : (x.end ? 'Due ' + fmt(x.end) : 'No target date'); };
+  var epTxt = function(m){ var a = m.startedCount||0, b = m.epicCount||0; return a + ' of ' + b + ' epic' + (b===1?'':'s') + ' ' + (a===1 && b!==1 ? 'has' : (b===1 ? 'has' : 'have')) + ' tasks'; };
   var meta = function(x){ var m = x.m; return range(x) + ' · ' + (m.taskCount||0) + ' task' + (m.taskCount===1?'':'s'); };
   var status = '';
   if(current){
@@ -4685,7 +4711,7 @@ function renderTimelineInitiative(){
     var label = x.pct >= 100 ? 'Complete' : x.late ? 'Past target' : x === current ? 'Current phase' : x.pct > 0 ? 'In progress' : 'Not started';
     return '<button type="button" class="mph ' + cls + '" onclick="openMilestoneDetail(MILESTONES_DATA[' + x.i + '].name)" title="See this phase\'s epics">'
       + '<span class="mph-st"><i>' + (x.pct >= 100 ? '✓' : (k+1)) + '</i>' + label + '</span>'
-      + '<b>' + escapeHtml(x.stage) + '</b><span class="mph-pc">' + x.pct + '%</span>'
+      + '<b>' + escapeHtml(x.stage) + '</b><span class="mph-pc">' + x.pct + '%<small>' + epTxt(x.m) + '</small></span>'
       + '<span class="mph-bar"><i style="width:' + Math.min(100, x.pct) + '%"></i></span>'
       + '<span class="mph-meta">' + escapeHtml(meta(x)) + '</span></button>';
   }).join('');
@@ -4693,8 +4719,8 @@ function renderTimelineInitiative(){
     var m = x.m;
     return '<button type="button" class="mot" onclick="openMilestoneDetail(MILESTONES_DATA[' + x.i + '].name)" title="See this workstream\'s epics">'
       + '<b>' + escapeHtml(m.name) + (x.late ? '<span class="mflag">Past target</span>' : '') + '</b>'
-      + '<span class="mot-pc">' + x.pct + '%</span>'
-      + '<span class="mot-meta' + (x.late ? ' late' : '') + '">' + escapeHtml(meta(x)) + ' · ' + (m.startedCount||0) + ' of ' + (m.epicCount||0) + ' epic' + (m.epicCount===1?'':'s') + ' started</span></button>';
+      + '<span class="mot-pc">' + x.pct + '%<small>' + epTxt(m) + '</small></span>'
+      + '<span class="mot-meta' + (x.late ? ' late' : '') + '">' + escapeHtml(meta(x)) + '</span></button>';
   }).join('');
   $('#timelineInitBody').innerHTML =
     (status ? '<p class="mstatus">' + status + '</p>' : '')
