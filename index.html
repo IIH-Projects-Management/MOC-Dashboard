@@ -1,4 +1,4 @@
-<!-- MOC Dashboard | v10.6 (2026-10-15): compact fixed-size left menu | v10.5: Inter font for the left menu | v10.4: Client View Copilot risks (open + mitigated) | v10.3: Copilot risks show on their linked phase | v10.2: bolder sidebar menu | v10.1: text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
+<!-- MOC Dashboard | v11 (2026-10-18): admin-panel redesign in Ministry of Culture colours (header unchanged), key-numbers strip, foldable menu, Copilot risk impact forecast, "Meetings to be scheduled" in the weekly summary | v10.6 (2026-10-15): compact fixed-size left menu | v10.5: Inter font for the left menu | v10.4: Client View Copilot risks (open + mitigated) | v10.3: Copilot risks show on their linked phase | v10.2: bolder sidebar menu | v10.1: text-only sizing (Balanced default, A-/A+ 5 levels) | v10: per-user login (email + password), roles Admin / Editor / Viewer, Users & Access admin page, change history, edited-by, who is online, bigger font with A-/A+ | was: v9 OPEN (no login, no users, no history) | from v8 DRAFT 2026-10-04 | 2026-10-11: shared Firestore with anonymous access; removed Users, Missing Info, Copilot RACI / Weekly Meetings / Surveys & Value -->
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
@@ -616,7 +616,7 @@ onAuthStateChanged(auth, user=>{
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Kufi+Arabic:wght@400;500;700&display=swap">
 <style>
 
 :root{
@@ -1696,6 +1696,125 @@ body.ro select[onchange^="cpSetField"]{pointer-events:none;opacity:.85;}
 .sidebar .cl-item{font-weight:600;color:#D5DFEE;}
 .pres-dot{font-size:10px !important;}
 .sidebar .tabbtn{white-space:nowrap;}
+
+/* ════════ v11 · "Clear phases" in Ministry of Culture colours (menu + pages; the top header keeps its own look) ════════
+   navy #0F2837 · wine #781943 · gold #B8874A · terracotta #C5634E  (sampled from the MoC logo) */
+.shell, .modal-backdrop, #askOverlay, .detail-modal-backdrop{
+  --navy:#0F2837; --navy2:#0F2837; --pink:#781943; --amber:#B8874A;
+  --moc-navy:#0F2837; --moc-wine:#781943; --moc-gold:#B8874A; --moc-terra:#C5634E; --moc-line:#E1E5EB; --moc-soft:#F3F4F7; --moc-muted:#5E6C77;
+}
+.sidebar, .sidebar *, #kpiStrip, #kpiStrip *, .view:not(#view-client):not(#view-email), .view:not(#view-client):not(#view-email) *:not(code):not(pre):not(kbd):not(svg):not(path), #view-email > *:not(#emailUnlockedArea), #view-email .re-bar *, #view-email .re-subject *, #view-email .note{ font-family:'Inter','Noto Kufi Arabic','Segoe UI',Arial,sans-serif !important; }
+/* menu */
+.sidebar{ background:var(--moc-soft) !important; border-inline-end:1px solid #E6E9EE !important; padding:18px 12px !important; }
+.sidebar .label{ color:#7D8A95 !important; text-transform:none !important; letter-spacing:0 !important; font-weight:400 !important; font-size:12px !important; padding:6px 10px 4px !important; }
+.sidebar .tabbtn{ color:#33424F !important; font-weight:400 !important; font-size:13.5px !important; border-radius:10px !important; padding:8px 10px !important; gap:10px !important; box-shadow:none !important; }
+.sidebar .tabbtn:hover{ background:#E9ECF1 !important; color:var(--moc-navy) !important; }
+.sidebar .tabbtn.active, .sidebar .tabbtn[data-tab="copilot"].active.sb-open{ background:#FFFFFF !important; color:var(--moc-wine) !important; font-weight:600 !important; box-shadow:0 1px 2px rgba(15,40,55,.08), 0 0 0 1px #E3D4DA !important; }
+.sidebar .tabbtn .tb-ic{ width:18px !important; display:inline-grid; place-items:center; }
+.sidebar .mi, .sb-sub .mi{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; display:block; }
+.sidebar-divider{ border-top-color:var(--moc-line) !important; margin:10px 6px 8px !important; }
+.sidebar .sb-sub{ border-inline-start-color:#D9DEE5 !important; }
+.sidebar .sb-sub-btn{ color:#33424F !important; font-weight:400 !important; border-radius:9px !important; }
+.sidebar .sb-sub-btn:hover{ background:#E9ECF1 !important; }
+.sidebar .sb-sub-btn.on{ background:#FFFFFF !important; color:var(--moc-wine) !important; font-weight:600 !important; box-shadow:0 0 0 1px #E3D4DA !important; }
+.sidebar .sb-sub-btn span{ display:inline-grid !important; place-items:center; }
+.sidebar .cl-item{ color:var(--moc-muted) !important; font-weight:400 !important; }
+.sidebar .cl-divider{ background:var(--moc-line) !important; }
+/* pages */
+.main{ background:#FFFFFF; }
+.view-title{ font-weight:500 !important; letter-spacing:-.01em; color:var(--moc-navy) !important; font-size:calc(26px * var(--fa,1) + var(--fb,0px)) !important; }
+.view-sub{ color:var(--moc-muted) !important; line-height:1.5; max-width:78ch; }
+.main .card{ border-color:var(--moc-line) !important; box-shadow:none !important; border-radius:14px !important; }
+.main .btn{ border-radius:999px !important; font-weight:500 !important; }
+.main .btn.primary{ background:var(--moc-wine) !important; color:#fff !important; }
+.main .btn.secondary{ border-color:var(--moc-line) !important; color:var(--moc-navy) !important; background:#fff !important; }
+.main .ws-table th, .main table th{ background:#F7F8FA !important; color:var(--moc-muted) !important; font-weight:500 !important; text-transform:none !important; letter-spacing:0 !important; }
+.main .ws-table td, .main table td{ border-color:#EDEFF3 !important; }
+.main .tl-view-btn.active, .main .view-toggle button.active, .main .view-switch button.active{ background:var(--moc-navy) !important; color:#fff !important; }
+/* Project Workstreams (phases) */
+.mstatus{ margin:4px 0 18px; font-size:calc(15px * var(--fa,1) + var(--fb,0px)); color:var(--moc-navy); line-height:1.5; max-width:72ch; }
+.mphases{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border:1px solid var(--moc-line); border-radius:16px; overflow:hidden; margin-bottom:26px; }
+.mph{ all:unset; box-sizing:border-box; cursor:pointer; display:grid; gap:10px; align-content:start; padding:18px 20px 20px; border-inline-start:1px solid var(--moc-line); background:#fff; position:relative; }
+.mph:first-child{ border-inline-start:0; }
+.mph:hover{ background:#FAFBFC; } .mph:focus-visible{ outline:2px solid var(--moc-wine); outline-offset:-2px; }
+.mph-st{ display:flex; gap:8px; align-items:center; font-size:calc(12px * var(--fa,1) + var(--fb,0px)); color:var(--moc-muted); }
+.mph-st i{ width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-style:normal; font-size:11.5px; font-weight:600; background:#EDEFF3; color:#33424F; }
+.mph b{ font-size:calc(16px * var(--fa,1) + var(--fb,0px)); font-weight:600; color:var(--moc-navy); }
+.mph-pc{ font-size:calc(34px * var(--fa,1) + var(--fb,0px)); font-weight:300; letter-spacing:-.02em; color:var(--moc-navy); font-variant-numeric:tabular-nums; line-height:1.1; }
+.mph-bar{ display:block; height:4px; background:#EDEFF3; border-radius:2px; } .mph-bar i{ display:block; height:100%; border-radius:2px; background:var(--moc-navy); }
+.mph-meta{ font-size:calc(12.5px * var(--fa,1) + var(--fb,0px)); color:var(--moc-muted); }
+.mph.done .mph-st i{ background:var(--moc-navy); color:#fff; }
+.mph.now{ background:#FBF7F0; box-shadow:inset 0 3px 0 var(--moc-gold); } .mph.now:hover{ background:#F8F2E7; }
+.mph.now .mph-st i{ background:var(--moc-gold); color:#fff; } .mph.now .mph-pc{ color:#8A6431; } .mph.now .mph-bar i{ background:var(--moc-gold); }
+.mph.late .mph-meta, .mph.late .mph-st{ color:var(--moc-terra); } .mph.late .mph-bar i{ background:var(--moc-terra); }
+.mh3{ margin:0 0 4px; font-size:calc(15px * var(--fa,1) + var(--fb,0px)); font-weight:600; color:var(--moc-navy); }
+.mothers{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 32px; margin-bottom:18px; }
+.mot{ all:unset; box-sizing:border-box; cursor:pointer; display:grid; grid-template-columns:1fr auto; gap:4px 16px; padding:14px 4px; border-bottom:1px solid #EDEFF3; }
+.mot:hover b{ color:var(--moc-wine); } .mot:focus-visible{ outline:2px solid var(--moc-wine); outline-offset:2px; border-radius:6px; }
+.mot b{ font-size:calc(14.5px * var(--fa,1) + var(--fb,0px)); font-weight:500; color:var(--moc-navy); }
+.mot-pc{ grid-row:span 2; align-self:center; text-align:right; font-size:calc(22px * var(--fa,1) + var(--fb,0px)); font-weight:400; color:var(--moc-navy); font-variant-numeric:tabular-nums; }
+.mot-meta{ font-size:calc(12.5px * var(--fa,1) + var(--fb,0px)); color:var(--moc-muted); } .mot-meta.late{ color:var(--moc-terra); }
+.mflag{ display:inline-block; margin-inline-start:8px; font-size:calc(11.5px * var(--fa,1) + var(--fb,0px)); font-weight:500; color:#A84A35; background:#F9ECE7; border-radius:999px; padding:1px 8px; vertical-align:2px; }
+.mnote{ font-size:calc(12px * var(--fa,1) + var(--fb,0px)); color:#7D8A95; margin:6px 0 0; max-width:90ch; }
+@media (max-width:1100px){ .mphases{ grid-template-columns:repeat(2,minmax(0,1fr)); } .mph:nth-child(3){ border-inline-start:0; } .mph:nth-child(n+3){ border-top:1px solid var(--moc-line); } }
+@media (max-width:700px){ .mphases, .mothers{ grid-template-columns:1fr; } .mph{ border-inline-start:0; border-top:1px solid var(--moc-line); } .mph:first-child{ border-top:0; } }
+/* dark mode keeps the same structure */
+body.dark .sidebar{ background:#111A2C !important; border-inline-end-color:#24314A !important; }
+body.dark .sidebar .tabbtn, body.dark .sidebar .sb-sub-btn{ color:#C9D4E3 !important; }
+body.dark .sidebar .tabbtn:hover, body.dark .sidebar .sb-sub-btn:hover{ background:#1A2640 !important; color:#fff !important; }
+body.dark .sidebar .tabbtn.active, body.dark .sidebar .sb-sub-btn.on{ background:#1F2C46 !important; color:#F2C9D6 !important; box-shadow:0 0 0 1px #3A2633 !important; }
+body.dark .main{ background:var(--bg); }
+body.dark .mph{ background:var(--surface); } body.dark .mph.now{ background:#2A2417; }
+body.dark .mph b, body.dark .mph-pc, body.dark .mot b, body.dark .mot-pc, body.dark .mh3, body.dark .mstatus, body.dark .view-title{ color:var(--text) !important; }
+body.dark .mphases, body.dark .mph, body.dark .mot{ border-color:var(--border); }
+
+/* ════════ v11 · admin panel ════════ */
+#kpiStrip{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:0 0 22px; }
+#kpiStrip[hidden]{ display:none; }
+.kpi{ all:unset; box-sizing:border-box; cursor:pointer; background:#fff; border:1px solid #E1E5EB; border-radius:14px; padding:14px 16px; display:grid; gap:4px; min-width:0; transition:border-color .15s, box-shadow .15s; }
+.kpi:hover{ border-color:#CBB3BF; box-shadow:0 4px 14px rgba(15,40,55,.06); } .kpi:focus-visible{ outline:2px solid #781943; outline-offset:2px; }
+.kpi-l{ font-size:12px; color:#5E6C77; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kpi-v{ font-size:26px; font-weight:300; letter-spacing:-.02em; color:#0F2837; line-height:1.15; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kpi-s{ font-size:12px; color:#7D8A95; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kpi.warn .kpi-v{ color:#8A6431; } .kpi.bad .kpi-v{ color:#B5452F; } .kpi.ok .kpi-s{ color:#1E7F4C; } .kpi.bad .kpi-s{ color:#B5452F; }
+.kpi .kpi-bar{ height:3px; background:#EDEFF3; border-radius:2px; margin-top:4px; } .kpi .kpi-bar i{ display:block; height:100%; background:#0F2837; border-radius:2px; }
+body.dark .kpi{ background:var(--surface); border-color:var(--border); } body.dark .kpi-v{ color:var(--text); }
+@media (max-width:1280px){ #kpiStrip{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:700px){ #kpiStrip{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .kpi{ padding:12px; } .kpi-v{ font-size:22px; } }
+.view:not(#view-client) .fact{ background:#fff; text-align:left; padding:16px 18px; border-color:#E1E5EB; }
+.view:not(#view-client) .fact-n{ font-weight:300 !important; font-size:calc(32px * var(--fa,1) + var(--fb,0px)) !important; letter-spacing:-.02em; }
+.view:not(#view-client) .fact-l{ text-transform:none; letter-spacing:0; font-weight:500; font-size:calc(13px * var(--fa,1) + var(--fb,0px)); color:#0F2837; margin-top:6px; }
+.view:not(#view-client) .cv-cap{ text-transform:none; letter-spacing:0; font-weight:600; font-size:calc(15px * var(--fa,1) + var(--fb,0px)); color:#0F2837; }
+@media (max-width:700px){ #kpiStrip .kpi:last-child:nth-child(odd){ grid-column:span 2; } }
+/* foldable menu: icons only */
+.sb-fold{ all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:10px; width:100%; padding:7px 10px; margin:0 0 8px; border-radius:10px; color:#7D8A95; font-size:12px; }
+.sb-fold:hover{ background:#E9ECF1; color:#0F2837; } .sb-fold svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; transition:transform .18s; }
+body.sb-rail .sidebar{ width:64px !important; padding:18px 8px !important; overflow-x:hidden; }
+body.sb-rail .sidebar .tb-tx, body.sb-rail .sidebar .tb-caret, body.sb-rail .sidebar .label, body.sb-rail .sidebar .color-legend, body.sb-rail .sidebar #cpSubnav, body.sb-rail .sb-fold span{ display:none !important; }
+body.sb-rail .sidebar .tabbtn, body.sb-rail .sb-fold{ justify-content:center; padding:10px 0 !important; }
+body.sb-rail .sb-fold svg{ transform:rotate(180deg); }
+body.sb-rail .sidebar-divider{ margin:8px 4px !important; }
+@media (max-width:860px){ .sb-fold{ display:none; } body.sb-rail .sidebar{ width:252px !important; } body.sb-rail .sidebar .tb-tx, body.sb-rail .sidebar .label{ display:revert !important; } }
+/* forecast */
+.fc-card{ margin-bottom:16px; } .fc-top{ display:flex; align-items:center; gap:10px; } .fc-top .cv-cap{ margin:0; }
+.fc-tag{ font-size:11px; font-weight:600; color:#781943; background:#F6EBF0; border-radius:999px; padding:2px 9px; }
+.fc-lead{ margin:10px 0 12px; font-size:calc(14px * var(--fa,1) + var(--fb,0px)); color:#0F2837; line-height:1.55; max-width:95ch; }
+.fc-card.bad{ box-shadow:inset 3px 0 0 #C5634E !important; } .fc-card.warn{ box-shadow:inset 3px 0 0 #B8874A !important; } .fc-card.ok{ box-shadow:inset 3px 0 0 #1E7F4C !important; }
+.fc-rows{ display:grid; gap:0; border-top:1px solid #EDEFF3; }
+.fc-row{ display:grid; grid-template-columns:28px minmax(140px,1.2fr) minmax(150px,1fr) 70px minmax(160px,1.6fr); gap:10px; align-items:center; padding:9px 2px; border-bottom:1px solid #EDEFF3; font-size:calc(13px * var(--fa,1) + var(--fb,0px)); }
+.fc-n{ width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:11.5px; font-weight:600; background:#EDEFF3; color:#33424F; }
+.fc-row.done .fc-n{ background:#0F2837; color:#fff; } .fc-row.late .fc-n{ background:#B8874A; color:#fff; }
+.fc-row b{ font-weight:500; color:#0F2837; } .fc-d s{ color:#9AA5AF; } .fc-row.late .fc-x{ color:#B5452F; font-weight:600; } .fc-x{ color:#5E6C77; font-variant-numeric:tabular-nums; } .fc-w{ color:#5E6C77; font-size:.92em; }
+.fc-badge{ display:inline-block; margin-inline-start:6px; font-size:11.5px; font-weight:600; color:#8A6431; background:#FBF3E6; border:1px solid #EBD9BC; border-radius:999px; padding:1px 8px; cursor:help; }
+@media (max-width:860px){ .fc-row{ grid-template-columns:28px 1fr auto; } .fc-d{ grid-column:2; } .fc-w{ grid-column:2 / -1; } }
+/* tables become cards on phones */
+@media (max-width:700px){
+  .main table.tbl-cards, .main table.tbl-cards tbody, .main table.tbl-cards tr, .main table.tbl-cards td{ display:block; width:auto !important; }
+  .main table.tbl-cards thead, .main table.tbl-cards tr.tbl-head{ display:none; }
+  .main table.tbl-cards tr{ border:1px solid #E1E5EB; border-radius:12px; padding:8px 12px; margin:0 0 10px; background:#fff; }
+  .main table.tbl-cards td{ border:none !important; padding:4px 0 !important; text-align:start !important; }
+  .main table.tbl-cards td[data-label]:not([data-label=""])::before{ content:attr(data-label); display:block; font-size:11px; color:#7D8A95; font-weight:500; }
+}
 </style>
 <script>
 (function(){
@@ -2613,8 +2732,8 @@ function cpImport(J){
 }
 
 /* ---------- pages ---------- */
-const CP_PAGES = [ ['overview','Overview','📊'], ['plan','Project Plan','🗓️'],
-  ['support','Support & Comms','💬'], ['risks','Risk Register','⚠️'], ['users','Pilot Users','👥'], ['prompts','Prompt Library','💡'] ];   // v9: RACI, Weekly Meetings, Surveys & Value removed (data kept)
+const CP_PAGES = [ ['overview','Overview','<svg class="mi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'], ['plan','Project Plan','<svg class="mi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>'],
+  ['support','Support & Comms','<svg class="mi" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>'], ['risks','Risk Register','<svg class="mi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5v.1"/></svg>'], ['users','Pilot Users','<svg class="mi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5 6-5s5.4 1.6 6 5"/><path d="M16 4.5a3 3 0 0 1 0 6M21 20c-.3-2.4-1.6-4-3.6-4.7"/></svg>'], ['prompts','Prompt Library','<svg class="mi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3z"/></svg>'] ];   // v9: RACI, Weekly Meetings, Surveys & Value removed (data kept)
 let cpPage = (()=>{ try{ return localStorage.getItem('cpPage') || 'overview'; }catch(e){ return 'overview'; } })();
 let cpPlanView = 'list', cpPlanQ = '', cpPlanSt = '', cpUserQ = '', cpUserF = '', cpSupF = '';
 ['cpEdit','cpSave','cpDelete','cpSetField','cpMove','cpImportPick'].forEach(n=>{
@@ -2703,7 +2822,7 @@ const CP_RENDER = {
       return `<div class="cp-ph">
         <div class="cp-ph-h"><span class="cp-ph-n">${p.n}</span><b style="font-size:calc(15px * var(--fa,1) + var(--fb,0px));">${escapeHtml(p.name)}</b> ${cpPill(cpPhaseStatus(s))}
           <span style="color:var(--muted);font-size:calc(12.5px * var(--fa,1) + var(--fb,0px));">${s.done}/${s.total} done · ${s.pct}%</span>
-          <span style="font-size:calc(12.5px * var(--fa,1) + var(--fb,0px));">${slip ? `<s style="color:var(--muted);">${cpFmt(p.due)}</s> → <b style="color:${slip.open ? 'var(--red)' : 'var(--muted)'};">${cpFmt(slip.date)}</b> ${slip.risks.map(r=>cpRiskChip(r)).join(' ')}` : p.due ? '🎯 ' + cpFmt(p.due) : ''} ${cpPhaseRisks(p.n, slip && slip.risks).map(r=>cpRiskChip(r.id)).join(' ')}</span>
+          <span style="font-size:calc(12.5px * var(--fa,1) + var(--fb,0px));">${slip ? `<s style="color:var(--muted);">${cpFmt(p.due)}</s> → <b style="color:${slip.open ? 'var(--red)' : 'var(--muted)'};">${cpFmt(slip.date)}</b> ${slip.risks.map(r=>cpRiskChip(r)).join(' ')}` : p.due ? '🎯 ' + cpFmt(p.due) : ''} ${cpPhaseRisks(p.n, slip && slip.risks).map(r=>cpRiskChip(r.id)).join(' ')} ${cpFcBadge(p.n)}</span>
           <span style="flex:1"></span>
           <button class="btn secondary cp-mini no-shot" onclick="window._cpDefPhase=${p.n};cpEdit('cp_tasks')" title="Add an activity to this phase">＋</button>${cpEditBtn('cp_phases', p.id, 'Edit phase name / due date')}</div>
         <div style="overflow-x:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;">
@@ -2951,6 +3070,69 @@ function cpGantt(match){
     <p class="note" style="margin-top:10px;">Bar = start → due · dot = only one date · 🎯 phase due · ⚠ expected date (risk) · red line = today · click a row to edit. ${ts.length - dated.length ? (ts.length - dated.length) + ' activities have no dates yet.' : ''}</p></div>`;
 }
 
+
+
+/* v11 · Copilot risk impact forecast.
+   Each phase finishes no earlier than: its own due date + the delay carried from the phases before it,
+   the "pushes the due date to" date of its linked risks, and - if it is still open after that date - today.
+   A completed phase carries nothing forward. Plain rules, so every number can be explained. */
+function cpForecast(){
+  const DAY = 864e5, today = cpToday(), D = d => d ? new Date(String(d).slice(0,10) + 'T00:00:00') : null;
+  let carry = 0; const rows = [];
+  cpPhasesSorted().forEach(p=>{
+    const s = cpPhaseStats(p.n), done = cpPhaseStatus(s) === 'Completed', due = D(p.due), slip = cpPhaseSlip(p.n), why = [];
+    if(!due){ rows.push({ n:p.n, name:p.name, done, due:null, fc:null, days:0, why }); return; }
+    let fc = new Date(due.getTime() + carry * DAY);
+    if(carry > 0 && !done) why.push({ k:'carry', days:carry });
+    if(slip && D(slip.date) > fc){ fc = D(slip.date); why.push({ k:'risk', ids:slip.risks, open:slip.open }); }
+    if(!done && fc < today){ fc = new Date(today); why.push({ k:'open' }); }
+    const days = done ? 0 : Math.max(0, Math.round((fc - due) / DAY));
+    if(!done) carry = Math.max(carry, days);
+    rows.push({ n:p.n, name:p.name, done, due, fc: done ? due : fc, days, why });
+  });
+  const last = [...rows].reverse().find(r=>r.due), cm = MILESTONES_DATA.find(m=>/copilot|copliot/i.test(m.name));
+  const target = cm && cm.targetDate ? (d=>{ d.setHours(0,0,0,0); return d; })(new Date(cm.targetDate)) : null;
+  const end = last ? last.fc : null, planned = last ? last.due : null;
+  return { rows, end, planned, endDays: end && planned ? Math.round((end - planned) / DAY) : 0, target,
+           spare: end && target ? Math.round((target - end) / DAY) : null,
+           drivers: [...new Set(rows.flatMap(r=>r.why.filter(w=>w.k==='risk' && w.open).flatMap(w=>w.ids)))],
+           openLate: rows.filter(r=>r.why.some(w=>w.k==='open')).map(r=>r.n) };
+}
+function cpFcWhy(r){
+  return r.why.map(w=> w.k==='carry' ? `+${w.days} day${w.days===1?'':'s'} carried from earlier phases`
+    : w.k==='risk' ? `${w.ids.join(', ')} ${w.open ? 'pushes it' : 'pushed it (closed)'}`
+    : 'still open after its date - earliest finish is today').join(' · ');
+}
+function cpFcBadge(n){
+  if(typeof cpForecast !== 'function') return '';
+  const r = cpForecast().rows.find(x=>+x.n===+n);
+  if(!r || r.done || !r.days || !r.why.some(w=>w.k!=='risk')) return '';
+  return `<span class="fc-badge" title="${escapeHtml(cpFcWhy(r))}">Forecast ${cpFmt(r.fc.toISOString().slice(0,10))} · +${r.days} d</span>`;
+}
+function cpForecastCard(){
+  const F = cpForecast(); if(!F.end) return '';
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'), f = d => cpFmt(iso(d));
+  const tone = F.spare == null ? '' : F.spare < 0 ? 'bad' : F.spare <= 7 ? 'warn' : 'ok';
+  const head = F.endDays > 0
+    ? `At the current position the rollout finishes around <b>${f(F.end)}</b>, <b>${F.endDays} day${F.endDays===1?'':'s'}</b> after the plan (${f(F.planned)}).`
+    : `The rollout is on plan to finish by <b>${f(F.planned)}</b>.`;
+  const tgt = F.spare == null ? '' : F.spare >= 0 ? ` That is still within the ${f(F.target)} target, with ${F.spare} day${F.spare===1?'':'s'} to spare.` : ` That is <b>${-F.spare} day${F.spare===-1?'':'s'} after</b> the ${f(F.target)} target.`;
+  const drv = [F.drivers.length ? 'open risk' + (F.drivers.length>1?'s ':' ') + F.drivers.map(id=>cpRiskChip(id)).join(' ') : '',
+               F.openLate.length ? 'phase' + (F.openLate.length>1?'s ':' ') + F.openLate.join(', ') + ' still open after its date' : ''].filter(Boolean).join(' and ');
+  return `<div class="card fc-card ${tone}"><div class="fc-top"><h3 class="cv-cap">Risk impact forecast</h3><span class="fc-tag">Prediction</span></div>
+    <p class="fc-lead">${head}${tgt}${drv ? ` Main driver: ${drv}.` : ''}</p>
+    <div class="fc-rows">${F.rows.filter(r=>r.due).map(r=>`<div class="fc-row ${r.done ? 'done' : r.days ? 'late' : ''}">
+      <span class="fc-n">${r.done ? '✓' : r.n}</span><b>${escapeHtml(r.name)}</b>
+      <span class="fc-d">${r.done ? 'Complete' : r.days ? `<s>${f(r.due)}</s> → ${f(r.fc)}` : f(r.due)}</span>
+      <span class="fc-x">${r.done ? '' : r.days ? '+' + r.days + ' d' : 'on plan'}</span>
+      <span class="fc-w">${r.done ? '' : escapeHtml(cpFcWhy(r))}</span></div>`).join('')}</div>
+    <p class="note" style="margin:8px 0 0;">How it works: a phase cannot finish before its due date plus any delay from the phases before it, the date its linked risks push it to, or today if it is still open. Close or re-date a risk in the Risk Register and the forecast updates.</p></div>`;
+}
+(function(){   // put the forecast on the Copilot Overview, above the timeline
+  const ov = CP_RENDER.overview;
+  CP_RENDER.overview = function(){ const h = ov.apply(this, arguments), k = '<div class="card" style="margin-bottom:16px;"><h3 class="cv-cap">Project timeline</h3>';
+    return h.indexOf(k) < 0 ? h : h.replace(k, cpForecastCard() + k); };
+})();
 
 /* Copilot pages live in the main sidebar, under "✨ Copilot Rollout ▸" (fold-out, remembered) */
 let cpNavIsOpen = (()=>{ try{ return localStorage.getItem('cpNavOpen')==='1'; }catch(e){ return false; } })();
@@ -4478,49 +4660,48 @@ function setTimelineView(view, btn){
 
 // ── Milestone View - sourced from Milestones sheet of the Tracking Workbook ──
 function renderTimelineInitiative(){
-  var STAGE_COLORS = {Monitor:'var(--navy2)',Analyze:'var(--green)',Plan:'var(--amber)',Execute:'var(--pink)'};
-  function milestoneStage(name){
-    if(name.indexOf('Monitor')>-1)  return 'Monitor';
-    if(name.indexOf('Analyze')>-1)  return 'Analyze';
-    if(name.indexOf('Plan')>-1)     return 'Plan';
-    if(name.indexOf('Execute')>-1)  return 'Execute';
-    return 'Monitor';
-  }
+  /* v11 "Clear phases": the four AI Strategy phases in order, then every other workstream */
   var today = new Date(); today.setHours(0,0,0,0);
-  var rows = MILESTONES_DATA.map(function(m, msIdx){
-    var stage   = milestoneStage(m.name);
-    var color   = STAGE_COLORS[stage] || 'var(--navy2)';
-    var pct     = m.pct || 0;
-    var tDate   = m.targetDate;
-    var isPast  = tDate && tDate < today;
-    var sDate   = m.startDate ? new Date(m.startDate) : null;
-    var dateLabel = tDate ? (sDate ? sDate.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' - ' : '') + tDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
-    var dateBadge = '';
-    if(dateLabel){
-      var bg  = isPast ? (pct>=100 ? '#e8f8f2' : '#fce8e8') : '#eef3fa';
-      var col = isPast ? (pct>=100 ? 'var(--green)' : 'var(--red)') : 'var(--navy)';
-      var warn = (isPast && pct<100) ? ' ⚠️' : '';
-      dateBadge = '<span style="margin-left:8px;font-size:calc(10px * var(--fa,1) + var(--fb,0px));font-weight:600;padding:2px 6px;border-radius:10px;background:'+bg+';color:'+col+';white-space:nowrap;">🎯 '+dateLabel+warn+'</span>';
-    }
-    var inner = pct>8 ? '<span>'+pct+'%</span>' : '';
-    return '<div class="tl-row clickable" style="cursor:pointer;" title="Click to see this milestone\'s epics" onclick="openMilestoneDetail(MILESTONES_DATA['+msIdx+'].name)">'
-      + '<div class="tl-row-label" style="width:300px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;">'
-      + '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+color+';margin-right:6px;flex-shrink:0;"></span>'
-      + '<span>'+m.name+'</span>'
-      + '<span style="font-size:calc(10px * var(--fa,1) + var(--fb,0px));color:var(--muted);width:100%;padding-left:14px;">'+(m.startedCount||0)+' of '+m.epicCount+' epic'+(m.epicCount===1?'':'s')+' started · '+m.taskCount+' task'+(m.taskCount===1?'':'s')+'</span>'
-      // stage badge removed - name already contains the phase info
-      + dateBadge
-      + '</div>'
-      + '<div class="tl-bar-track"><div class="tl-bar-fill" style="width:'+pct+'%;background:'+color+';">'+inner+'</div></div>'
-      + '<div style="width:46px;text-align:right;font-size:calc(12px * var(--fa,1) + var(--fb,0px));font-weight:700;color:'+color+';">'+pct+'%</div>'
-      + '</div>';
-  });
+  var DAY = 86400000, STAGES = ['Monitor','Analyze','Plan','Execute'];
+  var fmt = function(d){ return d ? d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : ''; };
+  var stageOf = function(n){ for(var k=0;k<STAGES.length;k++){ if(n.indexOf(STAGES[k])>-1 && /strategy/i.test(n)) return STAGES[k]; } return null; };
+  var items = MILESTONES_DATA.map(function(m, i){ return { m:m, i:i, stage:stageOf(m.name), pct:m.pct||0,
+    end: m.targetDate ? new Date(m.targetDate) : null, start: m.startDate ? new Date(m.startDate) : null }; });
+  items.forEach(function(x){ x.late = x.end && x.end < today && x.pct < 100; });
+  var phases = STAGES.map(function(st){ return items.filter(function(x){ return x.stage===st; })[0]; }).filter(Boolean);
+  var others = items.filter(function(x){ return phases.indexOf(x) < 0; });
+  var current = phases.filter(function(x){ return x.pct < 100 && !x.late && x.pct > 0; })[0] || phases.filter(function(x){ return x.pct < 100 && !x.late; })[0] || null;
+  var range = function(x){ return x.start ? fmt(x.start) + ' – ' + fmt(x.end) : (x.end ? 'Due ' + fmt(x.end) : 'No target date'); };
+  var meta = function(x){ var m = x.m; return range(x) + ' · ' + (m.taskCount||0) + ' task' + (m.taskCount===1?'':'s'); };
+  var status = '';
+  if(current){
+    var days = current.end ? Math.round((current.end - today)/DAY) : null;
+    status = escapeHtml(current.stage) + ' is the current phase, ' + current.pct + '% done' + (days === null ? '.' : days > 1 ? ' with ' + days + ' days to its ' + fmt(current.end) + ' target.' : days === 1 ? ' with 1 day to its ' + fmt(current.end) + ' target.' : ', due today.');
+  } else if(phases.length && phases.every(function(x){ return x.pct >= 100; })){ status = 'All four AI Strategy phases are complete.'; }
+  var lateN = items.filter(function(x){ return x.late; }).length;
+  if(lateN) status += ' ' + lateN + ' workstream' + (lateN===1?' is':'s are') + ' past target.';
+  var phaseHTML = phases.map(function(x, k){
+    var cls = x.pct >= 100 ? 'done' : x === current ? 'now' : x.late ? 'late' : '';
+    var label = x.pct >= 100 ? 'Complete' : x.late ? 'Past target' : x === current ? 'Current phase' : x.pct > 0 ? 'In progress' : 'Not started';
+    return '<button type="button" class="mph ' + cls + '" onclick="openMilestoneDetail(MILESTONES_DATA[' + x.i + '].name)" title="See this phase\'s epics">'
+      + '<span class="mph-st"><i>' + (x.pct >= 100 ? '✓' : (k+1)) + '</i>' + label + '</span>'
+      + '<b>' + escapeHtml(x.stage) + '</b><span class="mph-pc">' + x.pct + '%</span>'
+      + '<span class="mph-bar"><i style="width:' + Math.min(100, x.pct) + '%"></i></span>'
+      + '<span class="mph-meta">' + escapeHtml(meta(x)) + '</span></button>';
+  }).join('');
+  var otherHTML = others.map(function(x){
+    var m = x.m;
+    return '<button type="button" class="mot" onclick="openMilestoneDetail(MILESTONES_DATA[' + x.i + '].name)" title="See this workstream\'s epics">'
+      + '<b>' + escapeHtml(m.name) + (x.late ? '<span class="mflag">Past target</span>' : '') + '</b>'
+      + '<span class="mot-pc">' + x.pct + '%</span>'
+      + '<span class="mot-meta' + (x.late ? ' late' : '') + '">' + escapeHtml(meta(x)) + ' · ' + (m.startedCount||0) + ' of ' + (m.epicCount||0) + ' epic' + (m.epicCount===1?'':'s') + ' started</span></button>';
+  }).join('');
   $('#timelineInitBody').innerHTML =
-    '<h3 style="margin:0 0 4px;font-size:calc(14px * var(--fa,1) + var(--fb,0px));color:var(--muted);font-weight:600;letter-spacing:.04em;">MILESTONES PROGRESS</h3>'
-    + '<p style="margin:0 0 12px;font-size:calc(11.5px * var(--fa,1) + var(--fb,0px));color:var(--muted);">Task = 100% when Completed, otherwise 0% · Epic = average of its tasks (0% if it has none) · Milestone = average of its started epics (epics with no tasks yet are not counted).</p>'
-    + rows.join('');
+    (status ? '<p class="mstatus">' + status + '</p>' : '')
+    + (phases.length ? '<div class="mphases">' + phaseHTML + '</div>' : '')
+    + (others.length ? '<h3 class="mh3">Other workstreams</h3><div class="mothers">' + otherHTML + '</div>' : '')
+    + '<p class="mnote">A task counts as 100% when it is completed. An epic is the average of its tasks; a workstream is the average of its started epics. Click any workstream to see its epics.</p>';
 }
-
 
 
 // ── MAPE View - 4 phases with progress bars ──────────────────────────────
@@ -4715,7 +4896,7 @@ function renderRisk(){
    ===================================================================== */
 const RE_KEY = 'reportEmail';
 const RE_SECTIONS = { intro:['Greeting','التحية'], week:['Key accomplishments','أبرز الإنجازات'], milestones:['Workstreams progress to-date','تقدّم الـMilestones حتى تاريخه'],
-  deliv:['Deliverables','المخرجات'], attention:['Needs attention','يحتاج إلى متابعة'], asks:['Decisions / support needed','قرارات ودعم مطلوب'], plan:["Next week's plan",'خطة الأسبوع القادم'],
+  deliv:['Deliverables','المخرجات'], attention:['Needs attention','يحتاج إلى متابعة'], asks:['Decisions / support needed','قرارات ودعم مطلوب'], meetings:['Meetings to be scheduled','اجتماعات مطلوب جدولتها'], plan:["Next week's plan",'خطة الأسبوع القادم'],
   next:['Key dates','مواعيد مهمة'], closing:['Closing','الخاتمة'] };
 Object.keys(RE_SECTIONS).forEach(k=>{ RE_SECTIONS[k] = RE_SECTIONS[k].map(termText); });   // headings follow TERMS
 function reWeekId(){ return (window.LAST_SNAPSHOT && window.LAST_SNAPSHOT.weekId) || 'first'; }   // edits belong to the week that follows this close
@@ -4835,6 +5016,40 @@ function reModel(Pin){
   eps.filter(e=>e.risk && e.risk !== 'On Track' && e.pct < 100).forEach(e=> att.push([ `${eb(e)} is flagged <b>${escapeHtml(e.risk)}</b> (${e.pct}%).`, `${ebA(e)} مصنّف <b>${L(escapeHtml(e.risk))}</b> (${L(e.pct + '%')}).` ]));
   ms.filter(m=>overdue(m) && !isCop(m)).sort((a,c)=>D(a.targetDate) - D(c.targetDate)).forEach(m=> att.push([
     `${b(m.name)} is past its target date (${fe(m.targetDate)}) at ${m.pct}%.`, `${bA(m.name)} تجاوز الموعد المستهدف (${fa(m.targetDate)}) عند ${L(m.pct + '%')}.` ]));
+
+  // ---- v11: Copilot risk impact (forecast) in "Needs attention" ----
+  if(CPL && CPL.fromWorkspace && typeof cpForecast === 'function' && CP_TASKS.length){ const F = cpForecast();
+    if(F.end && F.endDays > 0){ const t = F.spare == null ? ['', ''] : F.spare >= 0 ? [`, still within the ${fe(F.target)} target`, `، ضمن الموعد المستهدف ${fa(F.target)}`] : [`, ${-F.spare} days after the ${fe(F.target)} target`, `، بعد الموعد المستهدف ${fa(F.target)} بـ${L(-F.spare)} يوماً`];
+      const dv = F.drivers.length ? [` - driven by ${F.drivers.join(', ')}`, ` - بسبب ${L(F.drivers.join(', '))}`] : ['', ''];
+      att.push([`<b>Copilot rollout</b> is forecast to finish around ${fe(F.end)} (+${F.endDays} days against the plan${t[0]})${dv[0]}.`,
+                `<b>${L('Copilot')}</b>: من المتوقع انتهاء الإطلاق حوالي ${fa(F.end)} (${L('+' + F.endDays)} يوماً عن الخطة${t[1]})${dv[1]}.`]); } }
+
+  // ---- v11: meetings to be scheduled (max 5) - worked out from dates, progress and open risks; ✏️ to reword ----
+  { const mt = [], seenM = {}, PRI = { cr:0, so:1, rp:1, rv:2, ko:3, se:4 }, push = (k, d, en, ar) => { if(seenM[k]) return; seenM[k] = 1; mt.push([PRI[k.slice(0,2)] * 1e14 + (d ? d.getTime() : 0), en, ar]); };
+    const short = (t, n) => { t = String(t || '').trim(); if(t.length <= n) return t; t = t.slice(0, n); return t.slice(0, t.lastIndexOf(' ')) + '…'; };
+    const by = d => [` - by ${fe(d)}`, ` - قبل ${fa(d)}`];
+    // decision meetings on open Copilot risks that move a phase
+    (typeof CP_RISKS !== 'undefined' ? CP_RISKS : []).filter(r=>cpRiskOpen(r) && r.phase !== '' && r.phase != null).forEach(r=>{
+      const d = today, w = r.owner ? [` with ${escapeHtml(r.owner)}`, ` مع ${L(escapeHtml(r.owner))}`] : ['', ''], ph = escapeHtml(cpPhaseName(r.phase));
+      push('cr' + r.id, d, `<b>Decision meeting on ${escapeHtml(r.id)}</b>${w[0]} - ${escapeHtml(short(String(r.description || '').split(/(?<=\.)\s/)[0].replace(/\.$/, ''), 110))}; it is holding Copilot phase ${escapeHtml(String(r.phase))} (${ph}). As soon as possible.`,
+                          `<b>اجتماع قرار بشأن ${L(escapeHtml(r.id))}</b>${w[1]} - يؤثر على مرحلة ${L('Copilot')} رقم ${L(escapeHtml(String(r.phase)))} (${L(ph)}). في أقرب وقت.`); });
+    // sign-off: a workstream almost done but past its date, or ending in the next 14 days
+    ms.filter(m=>!isCop(m) && m.pct < 100 && m.targetDate).forEach(m=>{ const t = D(m.targetDate), dd = (t - today) / 864e5;
+      if(dd < 0 && m.pct >= 90) push('so' + m.name, today, `<b>Sign-off meeting to close ${escapeHtml(m.name)}</b> (${m.pct}%, target was ${fe(t)}) - as soon as possible.`, `<b>اجتماع اعتماد لإغلاق ${L(escapeHtml(m.name))}</b> (${L(m.pct + '%')}، الموعد كان ${fa(t)}) - في أقرب وقت.`);
+      else if(dd < 0) push('rp' + m.name, today, `<b>Re-planning meeting for ${escapeHtml(m.name)}</b> - ${m.pct}% done, past its ${fe(t)} target; agree a new date.`, `<b>اجتماع إعادة تخطيط لـ ${L(escapeHtml(m.name))}</b> - ${L(m.pct + '%')}، تجاوز الموعد ${fa(t)}؛ للاتفاق على موعد جديد.`);
+      else if(dd <= 14){ const b2 = by(t); push('rv' + m.name, t, `<b>Review and sign-off meeting for ${escapeHtml(m.name)}</b> (${m.pct}% today)${b2[0]}.`, `<b>اجتماع مراجعة واعتماد لـ ${L(escapeHtml(m.name))}</b> (${L(m.pct + '%')} اليوم)${b2[1]}.`); } });
+    // kick-off: a workstream that starts in the next 10 days
+    ms.filter(m=>!m.pct && m.startDate && D(m.startDate) >= today && (D(m.startDate) - today) / 864e5 <= 10).forEach(m=>{ const b2 = by(D(m.startDate));
+      push('ko' + m.name, D(m.startDate), `<b>Kick-off meeting for ${escapeHtml(m.name)}</b>${b2[0]}.`, `<b>اجتماع انطلاق لـ ${L(escapeHtml(m.name))}</b>${b2[1]}.`); });
+    // engagement sessions / workshops not yet held, due in the next 14 days
+    { const ses = {}; TASKS_DATA.forEach(t=>{ if(t.deleted || t.status === 'Completed' || !t.session || !t.due) return; const d = D(t.due);
+        if(!eps.some(x=>normKey(x.name) === normKey(t.workstream))) return;   // workstream hidden from the client
+        if((d - today) / 864e5 <= 14){ const k = String(t.session).trim(); if(!ses[k] || d < ses[k].d) ses[k] = { d, t }; } });
+      Object.keys(ses).forEach(k=>{ const x = ses[k], ti = String(x.t.title || '').trim(), nm = ti && ti.toLowerCase().indexOf(k.toLowerCase()) < 0 ? k + ' - ' + ti : (ti || k);
+        const wh = x.d < today ? [` - was due ${fe(x.d)}, not held yet; schedule as soon as possible`, ` - كان مستحقاً في ${fa(x.d)} ولم يُعقد بعد؛ يُجدول في أقرب وقت`] : by(x.d);
+        push('se' + k, x.d, `<b>Session: ${escapeHtml(nm)}</b>${wh[0]}.`, `<b>${L('Session: ' + escapeHtml(nm))}</b>${wh[1]}.`); }); }
+    mt.sort((a,c)=>a[0] - c[0]).slice(0, 5).forEach(x=> add('meetings', x[1], x[2]));
+    if(!M.meetings) M.meetings = { en:[], ar:[] }; }
   att.forEach(x=> add('attention', x[0], x[1]));   // all of them
   M.allClear = !att.length;
   if(!att.length) add('attention', 'Nothing needs attention - everything is on track.', 'لا يوجد ما يستدعي المتابعة - كل شيء يسير وفق الخطة.');
@@ -4865,6 +5080,19 @@ function reModel(Pin){
 }
 
 /* milestone progress as a picture (drawn on a canvas - no screenshot library), so it survives Outlook and Word */
+/* v11: the same chart drawn right-to-left with an Arabic title, for the Arabic part of the email */
+function reChartAR(M){
+  const rows = M.chart, W = 1280, rowH = 54, top = 70, H = top + rows.length * rowH + 24, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, W, H); g.textBaseline = 'middle';
+  g.direction = 'rtl'; g.textAlign = 'right'; g.fillStyle = '#5F7085'; g.font = 'bold 22px Arial, Tahoma, sans-serif'; g.fillText(RE_SECTIONS.milestones[1], W - 28, 36);
+  const bR = W - 470, bw = 680, bL = bR - bw;
+  rows.forEach((r, i)=>{ const y = top + i * rowH + rowH / 2, col = r.pct >= 100 ? '#00845A' : '#1B2A4A';
+    g.direction = 'ltr'; g.textAlign = 'right'; g.fillStyle = '#172033'; g.font = '22px Arial'; let nm = r.name; while(g.measureText(nm).width > 420 && nm.length > 4) nm = nm.slice(0, -2); g.fillText(nm === r.name ? nm : nm + '…', W - 28, y);
+    const rr = (x, w, fill) => { g.fillStyle = fill; g.beginPath(); const h = 26, yy = y - h/2, rad = Math.min(13, w/2); g.moveTo(x + rad, yy); g.arcTo(x + w, yy, x + w, yy + h, rad); g.arcTo(x + w, yy + h, x, yy + h, rad); g.arcTo(x, yy + h, x, yy, rad); g.arcTo(x, yy, x + w, yy, rad); g.closePath(); g.fill(); };
+    rr(bL, bw, '#EEF1F5'); if(r.pct > 0){ const fw = Math.max(26, bw * Math.min(100, r.pct) / 100); rr(bR - fw, fw, col); }
+    g.textAlign = 'right'; g.fillStyle = col; g.font = 'bold 22px Arial'; g.fillText(r.pct + '%', bL - 18, y); });
+  return { url: c.toDataURL('image/png'), w: W, h: H };
+}
 function reChartPNG(M){
   const rows = M.chart, W = 1280, rowH = 54, top = 70, H = top + rows.length * rowH + 24, c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, W, H);
@@ -4881,6 +5109,7 @@ function reChartPNG(M){
 /* the email itself: inline styles + a table for the numbers, so Outlook and Word keep the look */
 function reHTML(lang, M, o){
   o = o || {}; const rtl = lang === 'ar', al = rtl ? 'right' : 'left', S = (s, i) => RE_SECTIONS[s][i];
+  if(rtl && o.chart){ const A = reChartAR(M); o = { ...o, picAbove:false, chart: { src: o.chart.src === 'chart.png' ? 'chart_ar.png' : A.url, h: Math.round(600 * A.h / A.w) } }; }
   const ed = s => o.edit ? ` <span class="re-tools"><button class="btn secondary cp-mini" onclick="reEdit('${s}')" title="Reword this part">✏️</button>${M.edited[s] ? `<span class="re-edited">edited</span>` : ''}${rtl && M.warn[s] ? `<span class="re-warn" onclick="reEdit('${s}')" title="Open ✏️ and write the Arabic">${M.warn[s] === 'missing' ? '⚠ لا يوجد نص عربي - يظهر النص الإنجليزي' : '⚠ الإنجليزي تعدّل والعربي لم يتغيّر - راجعه'}</span>` : ''}</span>` : '';
   const head = s => `<p${rtl ? ' dir="rtl"' : ''} style="font-size:10pt;font-weight:bold;letter-spacing:${rtl ? '0' : '1px'};color:#C0266A;margin:18px 0 4px;text-align:${al};">${rtl ? S(s,1) : S(s,0).toUpperCase()}${ed(s)}</p>`;
   const dirA = rtl ? ' dir="rtl"' : '', dirS = rtl ? 'direction:rtl;text-align:right;' : '';   // said on every paragraph: Word does not inherit it reliably
@@ -4893,11 +5122,12 @@ function reHTML(lang, M, o){
       <div style="font-size:9pt;color:#667085;">${rtl ? n.ar[1] : n.en[1]}</div></td>`).join('')}</tr></table>`;
   return `<div dir="${rtl ? 'rtl' : 'ltr'}" style="font-family:Calibri,'Segoe UI',Arial,Tahoma,sans-serif;font-size:11pt;color:#1F2937;line-height:1.5;text-align:${al};">
     ${paras('intro')}${nums}
-    ${o.picAbove && !M.edited.milestones ? '' : head('milestones')}${o.picAbove && !M.edited.milestones ? '' : o.chart ? `<p style="margin:6px 0 8px;"><img src="${o.chart.src}" width="600" height="${o.chart.h}" alt="${termText('Milestone progress')}" style="width:600px;max-width:100%;height:auto;border:1px solid #D8E2EC;"></p>` : ''}${o.picAbove && !M.edited.milestones ? '' : (!o.chart || M.edited.milestones ? list('milestones') : '')}
+    ${head('milestones')}${o.picAbove && !M.edited.milestones ? '' : o.chart ? `<p style="margin:6px 0 8px;"><img src="${o.chart.src}" width="600" height="${o.chart.h}" alt="${termText('Milestone progress')}" style="width:600px;max-width:100%;height:auto;border:1px solid #D8E2EC;"></p>` : ''}${o.picAbove || !o.chart || M.edited.milestones ? list('milestones') : ''}
     ${head('week')}${list('week')}
     ${M.deliv && M.deliv.en.length ? head('deliv') + list('deliv') : ''}
     ${head('attention')}${list('attention')}
     ${M.asks.en.length ? head('asks') + list('asks') : o.edit ? head('asks') + `<p class="re-empty"${rtl ? ' dir="rtl"' : ''}>${rtl ? 'لا يوجد نص، لذلك لن يظهر هذا القسم في الإيميل. اضغط ✏️ للإضافة.' : 'Nothing written, so this part is left out of the email. Press ✏️ to add.'}</p>` : ''}
+    ${M.meetings && M.meetings.en.length ? head('meetings') + list('meetings') : o.edit ? head('meetings') + `<p class="re-empty"${rtl ? ' dir="rtl"' : ''}>${rtl ? 'لا توجد اجتماعات مطلوبة. اضغط ✏️ للإضافة.' : 'No meetings to schedule this week. Click ✏️ to add one.'}</p>` : ''}
     ${head('plan')}${list('plan')}
     ${head('next')}${list('next')}
     <div style="margin-top:16px;">${paras('closing')}</div></div>`;
@@ -4923,7 +5153,7 @@ function reBody(M, o){
   const lang = rePref('lang', 'both'), pic = rePref('chart', '1') === '1' ? rePic(M) : null,
         chart = pic ? { src: o.chartSrc || pic.url, h: Math.round(600 * pic.h / pic.w) } : null;
   const sep = `<hr style="border:none;border-top:1px solid #D8E2EC;margin:24px 0;">`;
-  const en = () => reHTML('en', M, { edit:o.edit, chart }), ar = () => reHTML('ar', M, { edit:o.edit, chart: lang === 'both' ? null : chart, picAbove: lang === 'both' && !!chart });
+  const en = () => reHTML('en', M, { edit:o.edit, chart }), ar = () => reHTML('ar', M, { edit:o.edit, chart });
   return lang === 'en' ? en() : lang === 'ar' ? ar() : en() + sep + ar();
 }
 
@@ -4948,7 +5178,7 @@ function reShow(){
       <button class="btn secondary" onclick="renderEmailLocked()">🔒 Re-lock</button>
     </div>
     <div class="re-subject"><span>Subject</span><b dir="auto" id="reSubject">${escapeHtml(subj)}</b><button class="btn secondary cp-mini" onclick="reCopySubject()">📋</button></div>
-    ${lang === 'both' ? `<div class="re-two" id="reportBody"><div class="re-paper">${reHTML('en', M, { edit:true, chart: chartOn ? (p=>({ src:p.url, h: Math.round(600 * p.h / p.w) }))(rePic(M)) : null })}</div><div class="re-paper">${reHTML('ar', M, { edit:true, chart: null, picAbove: chartOn })}</div></div>`   /* one chart only, as in the email that is sent */
+    ${lang === 'both' ? `<div class="re-two" id="reportBody"><div class="re-paper">${reHTML('en', M, { edit:true, chart: chartOn ? (p=>({ src:p.url, h: Math.round(600 * p.h / p.w) }))(rePic(M)) : null })}</div><div class="re-paper">${reHTML('ar', M, { edit:true, chart: chartOn ? { src:'', h:0 } : null })}</div></div>`   /* v11: each language has its own chart */
       : `<div class="re-paper" id="reportBody">${reBody(M, { edit:true })}</div>`}
     <p class="note" style="margin-top:10px;">Built from the same numbers as the Client View. ✏️ rewords one part for this week only (${escapeHtml(reWeekId()==='first' ? 'until the first Close Week' : 'after ' + reWeekId())}); next week it is generated again.</p>`;
   reEnsureCards();
@@ -5022,7 +5252,8 @@ function reWordFile(){
 <body><p style="font-size:9pt;color:#667085;margin:0 0 10px;">Subject: ${escapeHtml(rePref('lang','both')==='ar' ? M.subject.ar : M.subject.en)}</p>${body}</body></html>`;
   const B = '----=_NextPart_MOC_REPORT';
   return ['MIME-Version: 1.0', `Content-Type: multipart/related; boundary="${B}"; type="text/html"`, '', `--${B}`, 'Content-Location: file:///C:/report.htm', 'Content-Type: text/html; charset="utf-8"', 'Content-Transfer-Encoding: base64', '', b64(html),
-    `--${B}`, 'Content-Location: file:///C:/chart.png', 'Content-Type: image/png', 'Content-Transfer-Encoding: base64', '', wrap(png.split(',')[1]), '', `--${B}--`, ''].join('\r\n');
+    `--${B}`, 'Content-Location: file:///C:/chart.png', 'Content-Type: image/png', 'Content-Transfer-Encoding: base64', '', wrap(png.split(',')[1]), '',
+    `--${B}`, 'Content-Location: file:///C:/chart_ar.png', 'Content-Type: image/png', 'Content-Transfer-Encoding: base64', '', wrap(reChartAR(M).url.split(',')[1]), '', `--${B}--`, ''].join('\r\n');
 }
 window.reWord = function(){
   const a = document.createElement('a'), url = URL.createObjectURL(new Blob([reWordFile()], { type:'application/msword' }));
@@ -8531,6 +8762,94 @@ Next steps (sample): ${MOC_DATA.filter(i=>i.next).slice(0,4).map(i=>`${i.name}: 
 };
 
 
+</script>
+<script>
+(function(){ var I = {"timeline": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 6h16M4 12h10M4 18h13\"/></svg>", "mape": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M20 12a8 8 0 1 1-2.3-5.7\"/><path d=\"M20 4v5h-5\"/></svg>", "overview": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 20V10M10 20V4M16 20v-7M22 20H2\"/></svg>", "workstreams": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"6\" rx=\"1.5\"/><rect x=\"3\" y=\"14\" width=\"18\" height=\"6\" rx=\"1.5\"/></svg>", "delta": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 17l6-6 4 4 8-8\"/><path d=\"M15 7h6v6\"/></svg>", "tasks": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M9 11l3 3 8-8\"/><path d=\"M20 12v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9\"/></svg>", "teamlens": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"9\" cy=\"8\" r=\"3.2\"/><path d=\"M3 20c.6-3.4 3-5 6-5s5.4 1.6 6 5\"/><path d=\"M16 4.5a3 3 0 0 1 0 6M21 20c-.3-2.4-1.6-4-3.6-4.7\"/></svg>", "riskregister": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M14 3v5h5M9 13h7M9 17h5\"/></svg>", "risk": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 4l9 16H3z\"/><path d=\"M12 10v4M12 17.5v.1\"/></svg>", "copilot": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 3l1.8 4.6L18.5 9l-4.7 1.6L12 15l-1.8-4.4L5.5 9l4.7-1.4z\"/><path d=\"M18 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z\"/></svg>", "email": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><path d=\"M3 7l9 6 9-6\"/></svg>", "users": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"8\" r=\"3.5\"/><path d=\"M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5\"/></svg>", "client": "<svg class=\"mi\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg>"};
+  function paint(){ document.querySelectorAll('.sidebar .tabbtn').forEach(function(b){ var ic = b.querySelector('.tb-ic'), k = b.dataset.tab;
+    if(ic && I[k] && !ic.querySelector('svg')) ic.innerHTML = I[k]; }); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', paint); else paint();
+  setTimeout(paint, 400);
+})();
+</script>
+<script>
+/* v11 · admin panel: key-numbers strip, foldable menu, tables as cards on phones */
+(function(){
+  var FOLD = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/><path d="M20 4v16"/></svg>';
+  function railPref(){ try{ return localStorage.getItem('mocRail'); }catch(e){ return null; } }
+  function setRail(on, save){ document.body.classList.toggle('sb-rail', !!on); if(save){ try{ localStorage.setItem('mocRail', on ? '1' : '0'); }catch(e){} } }
+  function addFold(){
+    var sb = document.querySelector('.sidebar'); if(!sb || sb.querySelector('.sb-fold')) return;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'sb-fold'; b.title = 'Fold / unfold the menu';
+    b.innerHTML = FOLD + '<span>Fold menu</span>'; b.onclick = function(){ setRail(!document.body.classList.contains('sb-rail'), true); };
+    sb.insertBefore(b, sb.firstChild);
+    var p = railPref(); setRail(p === '1' || (p === null && innerWidth > 860 && innerWidth < 1280), false);
+  }
+  /* ── key numbers ── */
+  function iso(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function fmt(d){ return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }); }
+  function kpiHTML(){
+    if(typeof MILESTONES_DATA === 'undefined' || !MILESTONES_DATA.length) return '';
+    var today = new Date(); today.setHours(0,0,0,0);
+    var ms = MILESTONES_DATA, overall = Math.round(ms.reduce(function(a, m){ return a + (m.pct || 0); }, 0) / ms.length);
+    var ST = ['Monitor','Analyze','Plan','Execute'], ph = ST.map(function(st){ return ms.filter(function(m){ return /strategy/i.test(m.name) && m.name.indexOf(st) > -1; })[0]; }).filter(Boolean);
+    var late = function(m){ return m.targetDate && new Date(m.targetDate) < today && (m.pct||0) < 100; };
+    var cur = ph.filter(function(m){ return (m.pct||0) < 100 && !late(m) && (m.pct||0) > 0; })[0] || ph.filter(function(m){ return (m.pct||0) < 100 && !late(m); })[0] || ph.filter(function(m){ return (m.pct||0) < 100; })[0];
+    var curName = cur ? ST.filter(function(st){ return cur.name.indexOf(st) > -1; })[0] : 'Done';
+    var curDays = cur && cur.targetDate ? Math.round((new Date(new Date(cur.targetDate).setHours(0,0,0,0)) - today) / 864e5) : null;
+    var tasks = (typeof TASKS_DATA !== 'undefined' ? TASKS_DATA : []).filter(function(t){ return !t.deleted; });
+    var over = tasks.filter(function(t){ return t.status !== 'Completed' && t.due && new Date(t.due) < today; }).length;
+    var dueWk = tasks.filter(function(t){ if(t.status === 'Completed' || !t.due) return false; var d = (new Date(t.due) - today) / 864e5; return d >= 0 && d <= 7; }).length;
+    var rr = (typeof RISK_REGISTER_DATA !== 'undefined' ? RISK_REGISTER_DATA : []).filter(function(r){ return !r.deleted && r.status === 'Open'; }).length;   // same rule as the Risk Register's "Open Risks"
+    var cr = (typeof CP_RISKS !== 'undefined' ? CP_RISKS : []).filter(function(r){ return !/closed|mitigated/i.test(r.status || ''); }).length;
+    var F = (typeof cpForecast === 'function' && typeof CP_TASKS !== 'undefined' && CP_TASKS.length) ? cpForecast() : null;
+    var cards = [
+      ['timeline', '', 'Overall progress', overall + '%', ms.filter(function(m){ return m.pct >= 100; }).length + ' of ' + ms.length + ' workstreams complete', overall],
+      ['timeline', curDays != null && curDays < 0 ? 'bad' : curDays != null && curDays <= 5 ? 'warn' : '', 'Current phase', cur ? curName + ' · ' + (cur.pct||0) + '%' : 'All complete',
+        curDays == null ? '' : curDays < 0 ? (-curDays) + ' days past target' : curDays === 0 ? 'target is today' : curDays + ' days to target (' + fmt(new Date(cur.targetDate)) + ')'],
+      ['tasks', over ? 'bad' : 'ok', 'Overdue tasks', String(over), dueWk + ' more due in the next 7 days'],
+      ['riskregister', rr + cr ? 'warn' : 'ok', 'Open risks', String(rr + cr), rr + ' project · ' + cr + ' Copilot'],
+      F && F.end ? ['copilot', F.spare != null && F.spare < 0 ? 'bad' : F.endDays > 0 ? 'warn' : 'ok', 'Copilot finish (forecast)', fmt(F.end),
+        F.endDays > 0 ? '+' + F.endDays + ' days · ' + (F.spare == null ? 'vs plan' : F.spare >= 0 ? F.spare + ' days to spare' : (-F.spare) + ' days over target') : 'on plan'] : null
+    ].filter(Boolean);
+    return cards.map(function(c){
+      return '<button type="button" class="kpi ' + c[1] + '" data-go="' + c[0] + '"><span class="kpi-l">' + c[2] + '</span><span class="kpi-v">' + c[3] + '</span><span class="kpi-s">' + c[4] + '</span>'
+        + (c[5] != null ? '<span class="kpi-bar"><i style="width:' + Math.min(100, c[5]) + '%"></i></span>' : '') + '</button>';
+    }).join('');
+  }
+  var last = '';
+  function paintKpi(){
+    var main = document.querySelector('.main'); if(!main) return;
+    var el = document.getElementById('kpiStrip');
+    if(!el){ el = document.createElement('div'); el.id = 'kpiStrip'; el.className = 'no-print no-shot'; main.insertBefore(el, main.firstChild);
+      el.addEventListener('click', function(e){ var b = e.target.closest('[data-go]'); if(b && typeof showTab === 'function') showTab(b.dataset.go); }); }
+    var v = document.querySelector('.main .view.active'), id = v ? v.id : '';
+    var role = window.CURRENT_USER && window.CURRENT_USER.role;
+    var hide = !v || /view-(client|users|email)$/.test(id) || role === 'client';
+    el.hidden = hide; if(hide) return;
+    var h = kpiHTML(); if(h !== last){ el.innerHTML = h; last = h; }
+    el.querySelectorAll('[data-go]').forEach(function(b){ var t = document.querySelector('.sidebar .tabbtn[data-tab="' + b.dataset.go + '"]'); b.style.display = t && t.offsetParent === null && !document.body.classList.contains('sb-rail') ? 'none' : ''; });
+  }
+  /* ── tables → cards on phones: label each cell with its column header ── */
+  function labelTables(){
+    document.querySelectorAll('.main table').forEach(function(t){
+      if(t.closest('#view-client') || t.closest('.re-paper')) return;
+      var hr = t.querySelector('thead tr') || t.querySelector('tr'); if(!hr) return;
+      var ths = hr.querySelectorAll('th'); if(ths.length < 2) return;
+      var heads = Array.prototype.map.call(ths, function(th){ return th.textContent.trim(); });
+      t.classList.add('tbl-cards'); if(!t.querySelector('thead')) hr.classList.add('tbl-head');
+      t.querySelectorAll('tr').forEach(function(tr){ if(tr === hr) return; var tds = tr.children;
+        for(var i = 0; i < tds.length; i++){ if(tds[i].tagName === 'TD' && !tds[i].hasAttribute('data-label') && heads[i] != null) tds[i].setAttribute('data-label', heads[i]); } });
+    });
+  }
+  function tick(){ try{ paintKpi(); }catch(e){ console.warn('kpi', e); } if(innerWidth <= 700){ try{ labelTables(); }catch(e){} } }
+  function start(){
+    addFold(); tick();
+    if(typeof showTab === 'function' && !showTab.__v11){ var o = showTab; window.showTab = function(){ var r = o.apply(this, arguments); setTimeout(tick, 0); return r; }; window.showTab.__v11 = true;
+      try{ showTab = window.showTab; }catch(e){} }
+    setInterval(tick, 2500);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
 </script>
 </body>
 </html>
