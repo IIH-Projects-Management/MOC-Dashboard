@@ -629,7 +629,7 @@ body.dark{
   --bg:#0F1727;--surface:#172137;--surface2:#111A2C;--text:#ECF1F8;--muted:#9EACC1;--border:#2D3A53;
   --shadow:0 12px 34px rgba(0,0,0,.28);
 }
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:'Sakkal Majalla',Candara,Optima,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:calc(14px * var(--fa,1) + var(--fb,0px))}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:'Inter','Noto Kufi Arabic','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:calc(14px * var(--fa,1) + var(--fb,0px))}
 button,input,select,textarea{font:inherit}.app{min-height:100vh}.sidebar{background:linear-gradient(180deg,var(--navy2),var(--navy));color:#fff;padding:22px 14px;overflow:auto}
 .sidebar .brand{display:flex;gap:12px;align-items:center;padding:2px 8px 22px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:18px}.brand-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--pink),#E86FA1);display:grid;place-items:center;font-weight:800;font-size:calc(18px * var(--fa,1) + var(--fb,0px));box-shadow:0 8px 20px rgba(192,38,106,.35)}.brand h1{font-size:calc(14px * var(--fa,1) + var(--fb,0px));margin:0;line-height:1.3}.brand p{margin:4px 0 0;font-size:calc(11px * var(--fa,1) + var(--fb,0px));color:#C7D2E5}
 .nav-label{font-size:calc(10px * var(--fa,1) + var(--fb,0px));font-weight:800;letter-spacing:.13em;color:#9DAEC7;padding:8px 10px 6px}.nav-btn{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#DCE6F5;padding:10px 11px;border-radius:10px;text-align:left;cursor:pointer;margin:2px 0;transition:.18s}.nav-btn:hover{background:rgba(255,255,255,.08)}.nav-btn.active{background:#fff;color:var(--navy);font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.16)}.nav-btn .icon{width:19px;text-align:center}.nav-btn .badge{margin-left:auto;background:var(--pink);color:#fff;border-radius:999px;font-size:calc(10px * var(--fa,1) + var(--fb,0px));padding:2px 6px}
@@ -1234,10 +1234,10 @@ table{width:100%;border-collapse:collapse;font-size:calc(13px * var(--fa,1) + va
 .fact-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px;}
 .fact-cards.four{grid-template-columns:repeat(4,minmax(0,1fr));}
 .cv-fontsw button{font-size:calc(12px * var(--fa,1) + var(--fb,0px));padding:5px 10px;}
-/* v9: Sakkal Majalla is the dashboard font */
-body *:not(code):not(pre):not(kbd){font-family:'Sakkal Majalla',Candara,Optima,'Segoe UI',Arial,sans-serif;}
-/* Sakkal Majalla: same layout, bigger small text (it draws smaller than the default font) */
-.cv-sakkal, .cv-sakkal *{font-family:'Sakkal Majalla', Candara, Optima, 'Segoe UI', sans-serif !important;}
+/* v11: Inter is the dashboard font (Arabic text: Noto Kufi Arabic) */
+body *:not(code):not(pre):not(kbd){font-family:'Inter','Noto Kufi Arabic','Segoe UI',Arial,sans-serif;}
+/* (v9, unused since v11) Sakkal size boosts: same layout, bigger small text (it draws smaller than the default font) */
+.cv-sakkal, .cv-sakkal *{font-family:'Inter','Noto Kufi Arabic','Segoe UI',Arial,sans-serif !important;}
 .cv-sakkal .view-title{font-size:calc(27px * var(--fa,1) + var(--fb,0px));} .cv-sakkal .view-sub{font-size:calc(15.5px * var(--fa,1) + var(--fb,0px));}
 .cv-sakkal .ws-name,.cv-sakkal .fact-l{font-size:calc(14px * var(--fa,1) + var(--fb,0px));} .cv-sakkal .ws-sub,.cv-sakkal .fact-s{font-size:calc(14.5px * var(--fa,1) + var(--fb,0px));} .cv-sakkal .ws-tag{font-size:calc(13px * var(--fa,1) + var(--fb,0px));}
 .cv-sakkal .ws-pct,.cv-sakkal .fact-n{font-size:calc(46px * var(--fa,1) + var(--fb,0px));} .cv-sakkal .fact-cards.compact .fact-n{font-size:calc(38px * var(--fa,1) + var(--fb,0px));} .cv-sakkal .port-n{font-size:calc(52px * var(--fa,1) + var(--fb,0px));}
@@ -1703,7 +1703,7 @@ body.ro select[onchange^="cpSetField"]{pointer-events:none;opacity:.85;}
   --navy:#0F2837; --navy2:#0F2837; --pink:#781943; --amber:#B8874A;
   --moc-navy:#0F2837; --moc-wine:#781943; --moc-gold:#B8874A; --moc-terra:#C5634E; --moc-line:#E1E5EB; --moc-soft:#F3F4F7; --moc-muted:#5E6C77;
 }
-.sidebar, .sidebar *, #kpiStrip, #kpiStrip *, .view:not(#view-client):not(#view-email), .view:not(#view-client):not(#view-email) *:not(code):not(pre):not(kbd):not(svg):not(path), #view-email > *:not(#emailUnlockedArea), #view-email .re-bar *, #view-email .re-subject *, #view-email .note{ font-family:'Inter','Noto Kufi Arabic','Segoe UI',Arial,sans-serif !important; }
+.sidebar, .sidebar *, #kpiStrip, #kpiStrip *, .view:not(#view-email), .view:not(#view-email) *:not(code):not(pre):not(kbd):not(svg):not(path), #view-email > *:not(#emailUnlockedArea), #view-email .re-bar *, #view-email .re-subject *, #view-email .note{ font-family:'Inter','Noto Kufi Arabic','Segoe UI',Arial,sans-serif !important; }
 /* menu */
 .sidebar{ background:var(--moc-soft) !important; border-inline-end:1px solid #E6E9EE !important; padding:18px 12px !important; }
 .sidebar .label{ color:#7D8A95 !important; text-transform:none !important; letter-spacing:0 !important; font-weight:400 !important; font-size:12px !important; padding:6px 10px 4px !important; }
@@ -1862,6 +1862,8 @@ body.dark .mphases, body.dark .mph, body.dark .mot{ border-color:var(--border); 
 [data-theme="dark"] .fc-badge{ background:#33291A; border-color:#5A4626; color:#E2B979; }
 [data-theme="dark"] .view:not(#view-client) .fact{ background:var(--surface); border-color:var(--border); }
 [data-theme="dark"] .view:not(#view-client) .fact-l, [data-theme="dark"] .view:not(#view-client) .cv-cap{ color:var(--text); }
+/* v11: the email keeps the Ministry font, the rest of the dashboard uses Inter */
+#view-email .re-paper, #view-email .re-paper *{ font-family:'Sakkal Majalla',Calibri,'Segoe UI',Arial,Tahoma,sans-serif !important; }
 /* ════════ v11 · admin panel ════════ */
 #kpiStrip{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:0 0 22px; }
 #kpiStrip[hidden]{ display:none; }
@@ -5267,7 +5269,7 @@ function reHTML(lang, M, o){
       <div style="font-size:26pt;font-weight:bold;line-height:1.1;color:${n.color};" dir="ltr">${n.n}</div>
       <div style="font-size:9pt;font-weight:bold;color:#1B2A4A;margin-top:4px;">${rtl ? n.ar[0] : n.en[0].toUpperCase()}</div>
       <div style="font-size:9pt;color:#667085;">${rtl ? n.ar[1] : n.en[1]}</div></td>`).join('')}</tr></table>`;
-  return `<div dir="${rtl ? 'rtl' : 'ltr'}" style="font-family:Calibri,'Segoe UI',Arial,Tahoma,sans-serif;font-size:11pt;color:#1F2937;line-height:1.5;text-align:${al};">
+  return `<div dir="${rtl ? 'rtl' : 'ltr'}" style="font-family:'Sakkal Majalla',Calibri,'Segoe UI',Arial,Tahoma,sans-serif;font-size:11pt;color:#1F2937;line-height:1.5;text-align:${al};">
     ${paras('intro')}${nums}
     ${head('milestones')}${o.picAbove && !M.edited.milestones ? '' : o.chart ? `<p style="margin:6px 0 8px;"><img src="${o.chart.src}" width="600" height="${o.chart.h}" alt="${termText('Milestone progress')}" style="width:600px;max-width:100%;height:auto;border:1px solid #D8E2EC;"></p>` : ''}${o.picAbove || !o.chart || M.edited.milestones ? list('milestones') : ''}
     ${head('week')}${list('week')}
@@ -5395,7 +5397,7 @@ function reWordFile(){
   const body = reBody(M, { chartSrc:'chart.png' });
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>MOC Weekly Summary</title>
 <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
-<style>@page{size:8.5in 11in;margin:1in;} body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1F2937;}</style></head>
+<style>@page{size:8.5in 11in;margin:1in;} body{font-family:'Sakkal Majalla',Calibri,Arial,sans-serif;font-size:11pt;color:#1F2937;}</style></head>
 <body><p style="font-size:9pt;color:#667085;margin:0 0 10px;">Subject: ${escapeHtml(rePref('lang','both')==='ar' ? M.subject.ar : M.subject.en)}</p>${body}</body></html>`;
   const B = '----=_NextPart_MOC_REPORT';
   return ['MIME-Version: 1.0', `Content-Type: multipart/related; boundary="${B}"; type="text/html"`, '', `--${B}`, 'Content-Location: file:///C:/report.htm', 'Content-Type: text/html; charset="utf-8"', 'Content-Transfer-Encoding: base64', '', b64(html),
@@ -7995,7 +7997,7 @@ window.refreshHistoryViews = function(){
 
 
 /* ---- Client View font (per browser): 'default' or 'sakkal' ---- */
-function cvFont(){ return 'sakkal'; }   // v9: one font everywhere - Sakkal Majalla (page, its images and the PowerPoint)
+function cvFont(){ return 'default'; }   // v11: one font everywhere - Inter (page, its images and the PowerPoint)
 window.setCvFont = function(f){ try{ localStorage.setItem('cvFont', f); }catch(e){} renderClientView(); };
 
 /* ---- render one section (or part of it) into a hidden box shaped like the slide's content area, then photograph it ----
@@ -8057,7 +8059,7 @@ window.downloadClientPptx = async function(mode){
   showInfoToast('📊 Building the PowerPoint…');
   try{ await loadPptxLib(); }catch(e){ showInfoToast('⛔ ' + e.message); return; }
   const P = buildClientPayload();
-  const FONT = 'Sakkal Majalla', NAVY = '1B2A4A', GREY = '667A8F', LINE = 'D8E2EC', CARD = 'F8FAFC';
+  const FONT = 'Inter', NAVY = '1B2A4A', GREY = '667A8F', LINE = 'D8E2EC', CARD = 'F8FAFC';
   const GREEN = '00845A', AMBER = 'E88B00', RED = 'C0392B', TEAL = '19516D', PLUM = '6F1946', LIGHT = 'C3CDD8';
   const hex = c => { const m = { 'var(--green)':GREEN, 'var(--navy2)':'14213D', 'var(--amber)':AMBER, 'var(--red)':RED }; c = m[c] || c; return String(c).replace('#','').toUpperCase(); };
   const pctHex = p => p>=100 ? GREEN : p>=50 ? '14213D' : p>0 ? AMBER : '98A2B3';
@@ -8065,7 +8067,7 @@ window.downloadClientPptx = async function(mode){
   const now = new Date(), MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()];
   const dateLong = now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   let page = 0;
-  const READ = fs => fs >= 16 ? fs : Math.max(12, fs + 1.5);   // small text must stay readable in Sakkal Majalla (it draws small)
+  const READ = fs => fs >= 16 ? fs : Math.max(11, fs);   // v11: Inter draws at normal size, so no Sakkal boost
   const T = (sl, text, x, y, w, h, o={}) => sl.addText(termText(String(text)), { x, y, w, h, fontFace:FONT, color:NAVY, margin:0, valign:'middle', ...o, fontSize: READ(o.fontSize || 12) });
   const R = (sl, x, y, w, h, fill, o={}) => sl.addShape(o.round ? pptx.ShapeType.roundRect : pptx.ShapeType.rect, { x, y, w, h, fill:{ color:fill }, line:{ color: o.line || fill, width: o.line ? 0.75 : 0 }, rectRadius: o.round ? (o.r || 0.08) : undefined });
   const BAR = (sl, x, y, w, h, pct, color, bg) => { R(sl, x, y, w, h, bg || 'E6EBF1', { round:true, r:h/2 }); if(pct > 0) R(sl, x, y, Math.max(h, w*Math.min(pct,100)/100), h, color, { round:true, r:h/2 }); };
