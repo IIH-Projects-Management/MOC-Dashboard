@@ -2901,12 +2901,12 @@ const CP_RENDER = {
 
   plan(){
     const q = cpPlanQ.trim().toLowerCase();
-    const match = t => (!q || [t.code,t.title,t.lead,t.support,t.owner,t.output,t.channel].join(' ').toLowerCase().includes(q)) && (!cpPlanSt || t.status===cpPlanSt);
+    const match = t => (!q || [t.code,t.title,t.lead,t.support,t.owner,t.output,t.channel].join(' ').toLowerCase().includes(q)) && (!cpPlanSt || (cpPlanSt==='Overdue' ? cpTaskOverdue(t) : t.status===cpPlanSt));
     const filtering = !!(q || cpPlanSt), o = cpOverall();
     const tools = `<div class="cp-toolbar no-shot">
         <span class="view-toggle"><button class="${cpPlanView==='list'?'active':''}" onclick="cpSet('planView','list')">📋 List</button><button class="${cpPlanView==='gantt'?'active':''}" onclick="cpSet('planView','gantt')">📅 Timeline</button></span>
         <input type="text" id="cpPlanQ" placeholder="Search activity, lead, owner…" value="${escapeHtml(cpPlanQ)}" oninput="cpSet('planQ',this.value)">
-        <select onchange="cpSet('planSt',this.value)"><option value="">All statuses</option>${CP_ST.map(s=>`<option ${s===cpPlanSt?'selected':''}>${s}</option>`).join('')}</select>
+        <select onchange="cpSet('planSt',this.value)"><option value="">All statuses</option>${CP_ST.map(s=>`<option ${s===cpPlanSt?'selected':''}>${s}</option>`).join('')}<option value="Overdue" ${cpPlanSt==='Overdue'?'selected':''}>Overdue (${CP_TASKS.filter(cpTaskOverdue).length})</option></select>
         <span style="flex:1"></span>
         <button class="btn secondary" onclick="window._cpDefPhase=null;cpEdit('cp_phases')">＋ Phase</button>
         <button class="btn primary" onclick="window._cpDefPhase=null;cpEdit('cp_tasks')">＋ Activity</button></div>`;
@@ -3282,6 +3282,9 @@ function cpUsersImport(list){
           pre_survey:'Not Started', mid_survey:'Not Started', post_survey:'Not Started', usage_status:'Not Started', open_support_issues:0, notes:'' }); n++; } });
     setLastUpdate(); renderAllViews(); showInfoToast('✓ ' + n + ' pilot users updated - saving to the database…'); });
 }
+/* v11: an activity's due date is its own, or its phase's when it has none */
+function cpTaskDue(t){ const d = t.due || ((CP_PHASES.find(p=>+p.n===+t.phase) || {}).due); return d ? new Date(String(d).slice(0,10) + 'T00:00:00') : null; }
+function cpTaskOverdue(t){ const d = cpTaskDue(t); return t.status !== 'Completed' && !!d && d < cpToday(); }
 /* Copilot pages live in the main sidebar, under "✨ Copilot Rollout ▸" (fold-out, remembered) */
 let cpNavIsOpen = (()=>{ try{ return localStorage.getItem('cpNavOpen')==='1'; }catch(e){ return false; } })();
 function cpNavOpen(v){ cpNavIsOpen = !!v; try{ localStorage.setItem('cpNavOpen', v ? '1' : ''); }catch(e){} cpPaintSubnav(); }
@@ -8936,7 +8939,33 @@ Next steps (sample): ${MOC_DATA.filter(i=>i.next).slice(0,4).map(i=>`${i.name}: 
   /* ── key numbers ── */
   function iso(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
   function fmt(d){ return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }); }
+  function cpKpiHTML(){
+    if(typeof CP_TASKS === 'undefined' || !CP_TASKS.length) return '';
+    var today = new Date(); today.setHours(0,0,0,0);
+    var o = cpOverall(), ph = cpPhasesSorted(), cur = ph.filter(function(p){ return cpPhaseStatus(cpPhaseStats(p.n)) !== 'Completed'; })[0];
+    var cs = cur ? cpPhaseStats(cur.n) : null, due = cur && cur.due ? new Date(String(cur.due).slice(0,10) + 'T00:00:00') : null, slip = cur ? cpPhaseSlip(cur.n) : null;
+    var tgt = slip && slip.date && new Date(slip.date + 'T00:00:00') > due ? new Date(slip.date + 'T00:00:00') : due;
+    var dd = tgt ? Math.round((tgt - today) / 864e5) : null;
+    var over = CP_TASKS.filter(cpTaskOverdue).length;
+    var soon = CP_TASKS.filter(function(t){ var d = cpTaskDue(t); if(t.status === 'Completed' || !d) return false; var x = (d - today) / 864e5; return x >= 0 && x <= 7; }).length;
+    var risks = CP_RISKS.filter(function(r){ return !/closed|mitigated/i.test(r.status || ''); });
+    var F = typeof cpForecast === 'function' ? cpForecast() : null;
+    var cards = [
+      ['cp:plan:', '', 'Copilot progress', o.pct + '%', o.d + ' of ' + o.t + ' activities complete', o.pct],
+      ['cp:plan:', dd != null && dd < 0 ? 'bad' : dd != null && dd <= 5 ? 'warn' : '', 'Current phase', cur ? 'Phase ' + cur.n + ' · ' + cs.pct + '%' : 'All complete',
+        cur ? cur.name + ' · ' + (dd == null ? 'no due date' : dd < 0 ? (-dd) + ' days past ' + fmt(tgt) : dd === 0 ? 'due today' : dd + ' days to ' + fmt(tgt)) : ''],
+      ['cp:plan:Overdue', over ? 'bad' : 'ok', 'Overdue activities', String(over), soon + ' more due in the next 7 days'],
+      ['cp:risks:', risks.length ? 'warn' : 'ok', 'Open Copilot risks', String(risks.length), risks.map(function(r){ return r.id; }).join(' · ') || 'none open'],
+      F && F.end ? ['cp:overview:', F.spare != null && F.spare < 0 ? 'bad' : F.endDays > 0 ? 'warn' : 'ok', 'Rollout finish (forecast)', fmt(F.end),
+        F.endDays > 0 ? '+' + F.endDays + ' days · ' + (F.spare == null ? 'vs plan' : F.spare >= 0 ? F.spare + ' days to spare' : (-F.spare) + ' days over target') : 'on plan'] : null
+    ].filter(Boolean);
+    return cards.map(function(c){
+      return '<button type="button" class="kpi ' + c[1] + '" data-go="' + c[0] + '" title="' + String(c[2] + ': ' + c[3] + ' - ' + c[4]).replace(/"/g, '&quot;') + '"><span class="kpi-l">' + c[2] + '</span><span class="kpi-v">' + c[3] + '</span><span class="kpi-s">' + c[4] + '</span>'
+        + (c[5] != null ? '<span class="kpi-bar"><i style="width:' + Math.min(100, c[5]) + '%"></i></span>' : '') + '</button>';
+    }).join('');
+  }
   function kpiHTML(){
+    var av = document.querySelector('.main .view.active'); if(av && av.id === 'view-copilot') return cpKpiHTML();
     if(typeof MILESTONES_DATA === 'undefined' || !MILESTONES_DATA.length) return '';
     var today = new Date(); today.setHours(0,0,0,0);
     var ms = MILESTONES_DATA, overall = Math.round(ms.reduce(function(a, m){ return a + (m.pct || 0); }, 0) / ms.length);
@@ -8961,7 +8990,7 @@ Next steps (sample): ${MOC_DATA.filter(i=>i.next).slice(0,4).map(i=>`${i.name}: 
         F.endDays > 0 ? '+' + F.endDays + ' days · ' + (F.spare == null ? 'vs plan' : F.spare >= 0 ? F.spare + ' days to spare' : (-F.spare) + ' days over target') : 'on plan'] : null
     ].filter(Boolean);
     return cards.map(function(c){
-      return '<button type="button" class="kpi ' + c[1] + '" data-go="' + c[0] + '"><span class="kpi-l">' + c[2] + '</span><span class="kpi-v">' + c[3] + '</span><span class="kpi-s">' + c[4] + '</span>'
+      return '<button type="button" class="kpi ' + c[1] + '" data-go="' + c[0] + '" title="' + String(c[2] + ': ' + c[3] + ' - ' + c[4]).replace(/"/g, '&quot;') + '"><span class="kpi-l">' + c[2] + '</span><span class="kpi-v">' + c[3] + '</span><span class="kpi-s">' + c[4] + '</span>'
         + (c[5] != null ? '<span class="kpi-bar"><i style="width:' + Math.min(100, c[5]) + '%"></i></span>' : '') + '</button>';
     }).join('');
   }
@@ -8970,13 +8999,15 @@ Next steps (sample): ${MOC_DATA.filter(i=>i.next).slice(0,4).map(i=>`${i.name}: 
     var main = document.querySelector('.main'); if(!main) return;
     var el = document.getElementById('kpiStrip');
     if(!el){ el = document.createElement('div'); el.id = 'kpiStrip'; el.className = 'no-print no-shot'; main.insertBefore(el, main.firstChild);
-      el.addEventListener('click', function(e){ var b = e.target.closest('[data-go]'); if(b && typeof showTab === 'function') showTab(b.dataset.go); }); }
+      el.addEventListener('click', function(e){ var b = e.target.closest('[data-go]'); if(!b) return; var g = b.dataset.go;
+        if(g.indexOf('cp:') === 0){ var a = g.split(':'); cpNavGo(a[1]); if(a[1] === 'plan' && typeof cpSet === 'function') cpSet('planSt', a[2] || ''); window.scrollTo(0, 0); }
+        else if(typeof showTab === 'function') showTab(g); }); }
     var v = document.querySelector('.main .view.active'), id = v ? v.id : '';
     var role = window.CURRENT_USER && window.CURRENT_USER.role;
     var hide = !v || /view-(client|users|email)$/.test(id) || role === 'client';
     el.hidden = hide; if(hide) return;
     var h = kpiHTML(); if(h !== last){ el.innerHTML = h; last = h; }
-    el.querySelectorAll('[data-go]').forEach(function(b){ var t = document.querySelector('.sidebar .tabbtn[data-tab="' + b.dataset.go + '"]'); b.style.display = t && t.offsetParent === null && !document.body.classList.contains('sb-rail') ? 'none' : ''; });
+    el.querySelectorAll('[data-go]:not([data-go^="cp:"])').forEach(function(b){ var t = document.querySelector('.sidebar .tabbtn[data-tab="' + b.dataset.go + '"]'); b.style.display = t && t.offsetParent === null && !document.body.classList.contains('sb-rail') ? 'none' : ''; });
   }
   /* ── tables → cards on phones: label each cell with its column header ── */
   function labelTables(){
