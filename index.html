@@ -1793,6 +1793,75 @@ body.dark .mphases, body.dark .mph, body.dark .mot{ border-color:var(--border); 
   .topbar .global-search-wrap{ max-width:none !important; flex:1 1 260px !important; margin-inline-end:8px; }
 }
 @media (max-width:860px){ .topbar{ padding:10px 14px !important; column-gap:8px !important; } .topbar .global-search-wrap{ flex-basis:100%; } .topbar .meta-right{ text-align:left !important; margin-inline-start:0; } }
+
+/* v11 · dark theme (the dashboard switches theme with html[data-theme="dark"]) */
+[data-theme="dark"] .main{ background:var(--bg) !important; }
+[data-theme="dark"] .sidebar{ background:#111A2C !important; border-inline-end-color:#24314A !important; }
+[data-theme="dark"] .sidebar .label{ color:#8193AD !important; }
+[data-theme="dark"] .sidebar .tabbtn, [data-theme="dark"] .sidebar .sb-sub-btn{ color:#C9D4E3 !important; }
+[data-theme="dark"] .sidebar .tabbtn:hover, [data-theme="dark"] .sidebar .sb-sub-btn:hover{ background:#1A2640 !important; color:#FFFFFF !important; }
+[data-theme="dark"] .sidebar .tabbtn.active, [data-theme="dark"] .sidebar .tabbtn[data-tab="copilot"].active.sb-open, [data-theme="dark"] .sidebar .sb-sub-btn.on{ background:#1F2C46 !important; color:#F2A7C3 !important; box-shadow:0 0 0 1px #4A2A3A !important; }
+[data-theme="dark"] .sidebar .cl-item{ color:#9EACC1 !important; }
+[data-theme="dark"] .sidebar-divider{ border-top-color:#24314A !important; }
+[data-theme="dark"] .sidebar .sb-sub{ border-inline-start-color:#2D3A53 !important; }
+[data-theme="dark"] .sb-fold{ color:#8193AD; }
+[data-theme="dark"] .sb-fold:hover{ background:#1A2640; color:#FFFFFF; }
+[data-theme="dark"] .view-title{ color:var(--text) !important; }
+[data-theme="dark"] .view-sub{ color:var(--muted) !important; }
+[data-theme="dark"] .main .card{ border-color:var(--border) !important; }
+[data-theme="dark"] .main .btn.secondary{ background:var(--surface) !important; color:var(--text) !important; border-color:var(--border) !important; }
+[data-theme="dark"] .main .ws-table th, [data-theme="dark"] .main table th{ background:#131D31 !important; color:var(--muted) !important; }
+[data-theme="dark"] .main .ws-table td, [data-theme="dark"] .main table td{ border-color:#243049 !important; }
+[data-theme="dark"] .main .tl-view-btn.active, [data-theme="dark"] .main .view-toggle button.active, [data-theme="dark"] .main .view-switch button.active{ background:#2B3E57 !important; color:#FFFFFF !important; }
+[data-theme="dark"] .kpi{ background:var(--surface); border-color:var(--border); }
+[data-theme="dark"] .kpi:hover{ border-color:#5A3A4A; box-shadow:none; }
+[data-theme="dark"] .kpi-l{ color:var(--muted); }
+[data-theme="dark"] .kpi-v{ color:var(--text); }
+[data-theme="dark"] .kpi-s{ color:#8193AD; }
+[data-theme="dark"] .kpi.warn .kpi-v{ color:#E2B979; }
+[data-theme="dark"] .kpi.bad .kpi-v, [data-theme="dark"] .kpi.bad .kpi-s{ color:#F0937D; }
+[data-theme="dark"] .kpi.ok .kpi-s{ color:#5CC48E; }
+[data-theme="dark"] .kpi .kpi-bar{ background:#2A3650; }
+[data-theme="dark"] .kpi .kpi-bar i{ background:#CFDAE8; }
+[data-theme="dark"] .mphases{ border-color:var(--border); }
+[data-theme="dark"] .mph{ background:var(--surface); border-color:var(--border); }
+[data-theme="dark"] .mph:hover{ background:#1A2640; }
+[data-theme="dark"] .mph-st{ color:var(--muted); }
+[data-theme="dark"] .mph-st i{ background:#2A3650; color:#C9D4E3; }
+[data-theme="dark"] .mph b, [data-theme="dark"] .mph-pc{ color:var(--text); }
+[data-theme="dark"] .mph-meta{ color:var(--muted); }
+[data-theme="dark"] .mph-bar{ background:#2A3650; }
+[data-theme="dark"] .mph-bar i{ background:#CFDAE8; }
+[data-theme="dark"] .mph.done .mph-st i{ background:#CFDAE8; color:#0F1727; }
+[data-theme="dark"] .mph.now{ background:#2A2417; }
+[data-theme="dark"] .mph.now:hover{ background:#33291A; }
+[data-theme="dark"] .mph.now .mph-pc, [data-theme="dark"] .mph.now .mph-pc small{ color:#E2B979; }
+[data-theme="dark"] .mph.now .mph-bar i{ background:#C99A5B; }
+[data-theme="dark"] .mph.late .mph-meta, [data-theme="dark"] .mph.late .mph-st{ color:#F0937D; }
+[data-theme="dark"] .mph.late .mph-bar i{ background:#F0937D; }
+[data-theme="dark"] .mph-pc small, [data-theme="dark"] .mot-pc small{ color:var(--muted); }
+[data-theme="dark"] .mstatus, [data-theme="dark"] .mh3{ color:var(--text); }
+[data-theme="dark"] .mnote{ color:#8193AD; }
+[data-theme="dark"] .mot{ border-bottom-color:#243049; }
+[data-theme="dark"] .mot b, [data-theme="dark"] .mot-pc{ color:var(--text); }
+[data-theme="dark"] .mot:hover b{ color:#F2A7C3; }
+[data-theme="dark"] .mot-meta{ color:var(--muted); }
+[data-theme="dark"] .mot-meta.late{ color:#F0937D; }
+[data-theme="dark"] .mflag{ background:#3B241E; color:#F0937D; }
+[data-theme="dark"] .fc-tag{ background:#3A2231; color:#F2A7C3; }
+[data-theme="dark"] .fc-lead{ color:var(--text); }
+[data-theme="dark"] .fc-rows, [data-theme="dark"] .fc-row{ border-color:#243049; }
+[data-theme="dark"] .fc-n{ background:#2A3650; color:#C9D4E3; }
+[data-theme="dark"] .fc-row.done .fc-n{ background:#CFDAE8; color:#0F1727; }
+[data-theme="dark"] .fc-row.late .fc-n{ background:#C99A5B; color:#0F1727; }
+[data-theme="dark"] .fc-row b{ color:var(--text); }
+[data-theme="dark"] .fc-d{ color:var(--text); }
+[data-theme="dark"] .fc-d s{ color:#6F7F96; }
+[data-theme="dark"] .fc-x, [data-theme="dark"] .fc-w{ color:var(--muted); }
+[data-theme="dark"] .fc-row.late .fc-x{ color:#F0937D; }
+[data-theme="dark"] .fc-badge{ background:#33291A; border-color:#5A4626; color:#E2B979; }
+[data-theme="dark"] .view:not(#view-client) .fact{ background:var(--surface); border-color:var(--border); }
+[data-theme="dark"] .view:not(#view-client) .fact-l, [data-theme="dark"] .view:not(#view-client) .cv-cap{ color:var(--text); }
 /* ════════ v11 · admin panel ════════ */
 #kpiStrip{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:0 0 22px; }
 #kpiStrip[hidden]{ display:none; }
@@ -1836,7 +1905,7 @@ body.sb-rail .sidebar-divider{ margin:8px 4px !important; }
 @media (max-width:700px){
   .main table.tbl-cards, .main table.tbl-cards tbody, .main table.tbl-cards tr, .main table.tbl-cards td{ display:block; width:auto !important; }
   .main table.tbl-cards thead, .main table.tbl-cards tr.tbl-head{ display:none; }
-  .main table.tbl-cards tr{ border:1px solid #E1E5EB; border-radius:12px; padding:8px 12px; margin:0 0 10px; background:#fff; }
+  .main table.tbl-cards tr{ border:1px solid var(--border,#E1E5EB); border-radius:12px; padding:8px 12px; margin:0 0 10px; background:var(--surface,#fff); }
   .main table.tbl-cards td{ border:none !important; padding:4px 0 !important; text-align:start !important; }
   .main table.tbl-cards td[data-label]:not([data-label=""])::before{ content:attr(data-label); display:block; font-size:11px; color:#7D8A95; font-weight:500; }
 }
@@ -2923,7 +2992,7 @@ const CP_RENDER = {
     const L = CP_USERS.filter(u=>(!q || [u.name,u.email,u.role,u.department].join(' ').toLowerCase().includes(q))
       && (!cpUserF || (cpUserF==='ready' ? cpUserReady(u) : cpUserF==='notready' ? !cpUserReady(u) : u.user_group===cpUserF))).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
     const sel = (u, k, opts) => `<select class="cp-st-sel" onchange="cpSetField('cp_users','${escapeHtml(u.id)}','${k}',this.value)">${opts.map(o=>`<option ${o===u[k]?'selected':''}>${o}</option>`).join('')}</select>`;
-    return cpHead('Pilot Users', `${CP_USERS.length} selected pilot users · <b>team only</b> - the client sees totals, never names. "Ready" = license, access, training and pre-survey all done.`, cpAddBtn('cp_users','Pilot user')) + `
+    return cpHead('Pilot Users', `${CP_USERS.length} selected pilot users · <b>team only</b> - the client sees totals, never names. "Ready" = license, access, training and pre-survey all done.`, (myLevel()>=3 ? `<button class="btn secondary" onclick="cpUsersImportPick()" title="Fill in names, emails and positions from your pilot-user list (.xlsx)">📥 Import names from Excel</button> ` : '') + cpAddBtn('cp_users','Pilot user')) + `
       <div class="card" style="margin-bottom:16px;"><h3 class="cv-cap">Readiness</h3>${cpFunnel()}</div>
       <div class="card" style="overflow-x:auto;"><div class="cp-toolbar no-shot">
         <input type="text" id="cpUserQ" placeholder="Search name, role, email…" value="${escapeHtml(cpUserQ)}" oninput="cpSet('userQ',this.value)">
@@ -3159,6 +3228,58 @@ function cpForecastCard(){
     return h.indexOf(k) < 0 ? h : h.replace(k, cpForecastCard() + k); };
 })();
 
+
+/* v11 · Pilot users from Excel. Reads the list (sections such as "MoC Leadership" / "MoC Employee", each with a Name / Position / Email
+   header row) and fills the existing records in the same order: USR-001 = first person on the list, and so on. A person whose email is
+   already on a record is matched by email instead. Licence, training, survey and usage status are kept. Extra people are added. */
+function cpUsersFromRows(rows){
+  const T = v => v == null ? '' : String(v).replace(/\s+/g, ' ').trim(), out = []; let group = '', cols = null;
+  rows.forEach(r => { r = (r || []).map(T); const filled = r.filter(Boolean);
+    if(!filled.length) return;
+    const hi = r.findIndex(x => /^name$/i.test(x));
+    if(hi >= 0){ cols = { name: hi, pos: r.findIndex(x => /^(position|title|role)$/i.test(x)), email: r.findIndex(x => /e-?mail/i.test(x)) }; return; }
+    if(filled.length === 1 && !/@/.test(filled[0]) && (!cols || !r[cols.name] || !(cols.email >= 0 && r[cols.email]))){ group = filled[0].replace(/emplyee/i, 'Employee'); cols = null; return; }
+    if(!cols || !r[cols.name]) return;
+    out.push({ name: r[cols.name], position: cols.pos >= 0 ? r[cols.pos] : '', email: cols.email >= 0 ? r[cols.email].toLowerCase() : '', group });
+  });
+  return out;
+}
+function cpUsersPlan(list){
+  const N = v => String(v || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const users = [...CP_USERS].sort((a, b) => String(a.id).localeCompare(String(b.id), undefined, { numeric:true }));
+  const used = new Set(), plan = [];
+  list.forEach((p, i) => { let u = p.email && users.find(x => !used.has(x.id) && N(x.email) === N(p.email));
+    if(!u) u = users.filter(x => !used.has(x.id) && !(x.email && N(x.email) !== N(p.email)))[0];
+    if(u) used.add(u.id);
+    plan.push({ p, u, posDiff: !!(u && p.position && u.role && N(u.role) !== N(p.position)), groupDiff: !!(u && p.group && u.user_group && N(u.user_group) !== N(p.group)) }); });
+  return plan;
+}
+window.cpUsersImportPick = function(){
+  if(myLevel() < 3) return;
+  if(typeof XLSX === 'undefined'){ showInfoToast('⛔ The Excel reader did not load - check the internet connection and try again.'); return; }
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.xlsx,.xls';
+  inp.onchange = async ()=>{ const f = inp.files[0]; if(!f) return;
+    try{ const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type:'array' });
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:false, defval:null });
+      cpUsersImport(cpUsersFromRows(rows)); }
+    catch(e){ console.error(e); showInfoToast('⛔ Could not read this file: ' + (e.message || e)); } };
+  inp.click();
+};
+function cpUsersImport(list){
+  if(!list.length){ showInfoToast('⛔ No people found - the sheet needs a header row with "Name" (and "Position", "Email").'); return; }
+  const plan = cpUsersPlan(list), upd = plan.filter(x => x.u), add = plan.filter(x => !x.u), warn = plan.filter(x => x.posDiff || x.groupDiff);
+  const li = x => `<li>${escapeHtml(x.u ? x.u.id : 'new')}: <b>${escapeHtml(x.p.name)}</b> - list says "${escapeHtml(x.p.position)}"${x.p.group ? ' / ' + escapeHtml(x.p.group) : ''}, dashboard has "${escapeHtml(x.u.role || '')}"${x.u.user_group ? ' / ' + escapeHtml(x.u.user_group) : ''}</li>`;
+  askConfirm({ title:'Import pilot-user names?', yes:'Yes, update', no:'Cancel',
+    html:`Found <b>${list.length}</b> people in the file.<ul><li><b>${upd.length}</b> existing pilot users get their name, email and position (in list order: ${escapeHtml(upd[0].u.id)} = ${escapeHtml(upd[0].p.name)}).</li>${add.length ? `<li><b>${add.length}</b> new pilot users will be added.</li>` : ''}<li>Licence, access, training, survey and usage status stay as they are.</li></ul>`
+      + (warn.length ? `<p style="color:var(--red);margin:8px 0 4px;"><b>${warn.length}</b> position/group differences - check before you continue:</p><ul style="max-height:160px;overflow:auto;">${warn.slice(0, 20).map(li).join('')}</ul>` : '<p style="margin:8px 0 0;">Every position and group matches the dashboard, so the order lines up.</p>') })
+  .then(ok => { if(!ok) return;
+    let n = 0;
+    plan.forEach(x => { if(x.u){ x.u.name = x.p.name; if(x.p.email) x.u.email = x.p.email; if(x.p.position) x.u.role = x.p.position; if(x.p.group && !x.u.user_group) x.u.user_group = x.p.group; n++; }
+      else { const ids = CP_USERS.map(u => +(String(u.id).match(/(\d+)$/) || [0, 0])[1]); const nid = 'USR-' + String(Math.max(0, ...ids) + 1).padStart(3, '0');
+        CP_USERS.push({ id:nid, name:x.p.name, email:x.p.email, role:x.p.position, user_group:x.p.group, pilot_status:'Selected', license:'Not Assigned', access_tested:'No', training:'Not Started',
+          pre_survey:'Not Started', mid_survey:'Not Started', post_survey:'Not Started', usage_status:'Not Started', open_support_issues:0, notes:'' }); n++; } });
+    setLastUpdate(); renderAllViews(); showInfoToast('✓ ' + n + ' pilot users updated - saving to the database…'); });
+}
 /* Copilot pages live in the main sidebar, under "✨ Copilot Rollout ▸" (fold-out, remembered) */
 let cpNavIsOpen = (()=>{ try{ return localStorage.getItem('cpNavOpen')==='1'; }catch(e){ return false; } })();
 function cpNavOpen(v){ cpNavIsOpen = !!v; try{ localStorage.setItem('cpNavOpen', v ? '1' : ''); }catch(e){} cpPaintSubnav(); }
@@ -8875,6 +8996,45 @@ Next steps (sample): ${MOC_DATA.filter(i=>i.next).slice(0,4).map(i=>`${i.name}: 
     setInterval(tick, 2500);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+</script>
+<script>
+/* v11 · dark-mode text fixer. Many older parts of the page colour text with fixed dark navy / wine, which disappears on the dark
+   background. In dark mode this checks the text on screen and switches any unreadable text to a readable colour; switching back
+   to light mode removes every change. */
+(function(){
+  var root = document.documentElement, busy = false, timer = null;
+  function rgb(s){ var m = /rgba?\(([^)]+)\)/.exec(s || ''); if(!m) return null; var a = m[1].split(',').map(parseFloat); return { r:a[0], g:a[1], b:a[2], a: a.length > 3 ? a[3] : 1 }; }
+  function lum(c){ function f(v){ v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); } return .2126 * f(c.r) + .7152 * f(c.g) + .0722 * f(c.b); }
+  function bgOf(el){ for(var e = el; e && e !== document.documentElement; e = e.parentElement){ var st = getComputedStyle(e), c = rgb(st.backgroundColor);
+      if(c && c.a > .5) return c; if(st.backgroundImage && st.backgroundImage !== 'none') return null; }
+    return rgb(getComputedStyle(document.body).backgroundColor); }
+  function isDark(){ return root.getAttribute('data-theme') === 'dark'; }
+  function clear(){ document.querySelectorAll('[data-dkfix]').forEach(function(el){ el.style.removeProperty('color'); el.removeAttribute('data-dkfix'); }); }
+  function run(){
+    if(busy) return; busy = true;
+    try{
+      if(!isDark()){ clear(); return; }
+      var scope = document.querySelectorAll('.main .view.active, #kpiStrip, .modal-overlay.open, #detailModalOverlay.open');
+      scope.forEach(function(sc){ sc.querySelectorAll('*').forEach(function(el){
+        if(el.hasAttribute('data-dkfix') || el.closest('.re-paper') || el.tagName === 'svg' || el.closest('svg')) return;
+        var txt = false; for(var i = 0; i < el.childNodes.length; i++){ var n = el.childNodes[i]; if(n.nodeType === 3 && n.textContent.trim()){ txt = true; break; } }
+        if(!txt || !el.getClientRects().length) return;
+        var st = getComputedStyle(el), fg = rgb(st.color), bg = bgOf(el); if(!fg || !bg) return;
+        var lf = lum(fg), lb = lum(bg), cr = (Math.max(lf, lb) + .05) / (Math.min(lf, lb) + .05); if(cr >= 3) return;
+        var col;
+        if(lb < .25){ col = fg.r > fg.g + 40 && fg.r > fg.b ? '#F2A7C3' : (fg.b > fg.r + 25 ? '#9CC8EA' : (fg.g > fg.r + 25 ? '#6FD3A0' : '#ECF1F8')); }
+        else { col = '#14213D'; }
+        el.style.setProperty('color', col, 'important'); el.setAttribute('data-dkfix', '1');
+      }); });
+    } finally { busy = false; }
+  }
+  function soon(){ clearTimeout(timer); timer = setTimeout(run, 200); }
+  new MutationObserver(function(ms){ if(busy) return; for(var i = 0; i < ms.length; i++){ var t = ms[i].target; if(t.nodeType === 1 && t.hasAttribute && t.hasAttribute('data-dkfix') && ms[i].type === 'attributes') continue; soon(); return; } })
+    .observe(document.body, { childList:true, subtree:true, attributes:true, attributeFilter:['class'] });
+  new MutationObserver(function(){ clear(); soon(); }).observe(root, { attributes:true, attributeFilter:['data-theme'] });
+  window.mocDarkFix = run;
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', soon); else soon();
 })();
 </script>
 </body>
