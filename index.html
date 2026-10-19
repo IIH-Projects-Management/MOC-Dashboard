@@ -1918,6 +1918,8 @@ body.dark .mphases, body.dark .mph, body.dark .mot{ border-color:var(--border); 
 .ep-app.on{ background:#E7F4EC; color:#1E7F4C; border-color:#BFE3CD; } .ep-app.off{ background:#F1F3F6; color:#6B7785; border-color:#DDE2E8; }
 .ep-app:hover:not([disabled]){ filter:brightness(.96); box-shadow:0 0 0 2px rgba(15,40,55,.08); } .ep-app[disabled]{ cursor:default; }
 [data-theme="dark"] .ep-app.on{ background:#173A2A; color:#6FD3A0; border-color:#22543D; } [data-theme="dark"] .ep-app.off{ background:#1E2840; color:#9EACC1; border-color:#2D3A53; }
+@keyframes epFlash{ from{ background:#FFF4D6; } to{ background:transparent; } } #wsTable tr.ep-flash td{ animation:epFlash 1.6s ease-out; }
+[data-theme="dark"] #wsTable tr.ep-flash td{ animation-name:epFlashD; } @keyframes epFlashD{ from{ background:#3A3320; } to{ background:transparent; } }
 /* ════════ v11 · admin panel ════════ */
 #kpiStrip{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:0 0 22px; }
 #kpiStrip[hidden]{ display:none; }
@@ -3387,10 +3389,16 @@ window.epicToggleApplicable = function(idx, ev){
   if(ev){ ev.stopPropagation(); ev.preventDefault(); }
   if(myLevel() < 3){ showInfoToast('Only editors can change this.'); return; }
   const e = MOC_DATA[idx]; if(!e) return;
+  const r0 = document.querySelector('#wsTable tr[data-idx="' + idx + '"]'), off = r0 ? r0.getBoundingClientRect().top : null, y = window.scrollY, ms = MILESTONES_DATA.find(m=>normKey(m.name) === normKey(e.initiative)), before = ms ? ms.pct : null;
   e.applicable = epicIncluded(e) ? 'no' : 'yes';
   setLastUpdate(); renderAllViews();
-  showInfoToast(e.applicable === 'yes' ? '✓ ' + e.name + ' is Applicable - it now counts in ' + (e.initiative || 'its workstream') + (e.taskCount ? '' : ' (0% until it has tasks)')
-                                       : '✓ ' + e.name + ' is Not applicable - it no longer counts in ' + (e.initiative || 'its workstream'));
+  const hold = ()=>{ const row = document.querySelector('#wsTable tr[data-idx="' + idx + '"]');   // keep the clicked row where it was on screen
+    if(row && off != null) window.scrollBy(0, row.getBoundingClientRect().top - off); else window.scrollTo(0, y); return row; };
+  requestAnimationFrame(()=>{ const row = hold(); if(row){ row.classList.remove('ep-flash'); void row.offsetWidth; row.classList.add('ep-flash'); } });
+  [120, 400, 900, 1600].forEach(t=>setTimeout(hold, t));
+  const now = ms ? ms.pct : null, ws = e.initiative || 'its workstream';
+  const pct = ms ? ' ' + ws + ': ' + (before !== now ? before + '% → ' : '') + now + '% (' + ms.startedCount + ' of ' + ms.epicCount + ' epics included).' : '';
+  showInfoToast((e.applicable === 'yes' ? '✓ Applicable - counts now' + (e.taskCount ? '.' : ' (0% until it has tasks).') : '✓ Not applicable - left out.') + pct);
 };
 function epicApplicableBtn(e, idx){
   const on = epicIncluded(e), can = myLevel() >= 3, why = e.applicable ? '' : (on ? ' (it has tasks)' : ' (no tasks yet)');
@@ -4680,12 +4688,14 @@ function renderWorkstreamsFilters(){
   const sSel = $('#wsStageFilter');
   const aSel = $('#wsAssigneeFilter');
   const pSel = $('#wsPctFilter');
+  const keep = [rSel, iSel, sSel, aSel, pSel].map(x=>x ? x.value : '');   // v11.3: remember the filters while the lists are rebuilt
   const initiatives = [...new Set(MOC_DATA.map(i=>i.initiative).filter(Boolean))].sort();
   iSel.innerHTML = `<option value="">All Milestones</option>` + initiatives.map(v=>`<option value="${v}">${v}</option>`).join('');
   sSel.innerHTML = `<option value="">All Stages</option>` + FRAMEWORK_STAGES.map(v=>`<option value="${v}">${v}</option>`).join('');
   aSel.innerHTML = `<option value="">All Assignees</option>` + TEAM_LEADS.map(v=>`<option value="${v}">${v}</option>`).join('');
   pSel.innerHTML = `<option value="">All Progress</option><option value="0-25">0 - 25%</option><option value="26-50">26 - 50%</option><option value="51-75">51 - 75%</option><option value="76-100">76 - 100%</option>`;
   rSel.innerHTML = `<option value="">All Risk Levels</option>` + RISK_LEVELS.map(r=>`<option value="${r}">${r}</option>`).join('');
+  [rSel, iSel, sSel, aSel, pSel].forEach((x, k)=>{ if(x && keep[k] && [...x.options].some(o=>o.value === keep[k])) x.value = keep[k]; });
   [iSel, sSel, aSel, pSel, rSel].forEach(sel=>sel.onchange = renderWorkstreamsTable);
 }
 let wsSortKey = null;
