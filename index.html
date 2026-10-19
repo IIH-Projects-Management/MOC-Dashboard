@@ -68,7 +68,7 @@ const COLL = {
                 fields:['id','session','title','description','workstream','department','workType','stage','assignee',
                         'status','risk','priority','start','due','tags','link','notes','completedAt','createdAt','createdBy'] },
   epics:      { get:()=>MOC_DATA, set:v=>{ MOC_DATA = v; }, key:e=>e.id, minLevel:1,
-                fields:['id','name','initiative','pillar','department','workType','stage','lead','risk','past','next','notes','createdAt','createdBy'] },
+                fields:['id','name','initiative','pillar','department','workType','stage','lead','risk','past','next','notes','createdAt','createdBy','applicable'] },
   milestones: { get:()=>MILESTONES_DATA, set:v=>{ MILESTONES_DATA.splice(0, MILESTONES_DATA.length, ...v);
                                                    INITIATIVES.splice(0, INITIATIVES.length, ...MILESTONES_DATA.map(m=>m.name)); },
                 key:m=>m.id, minLevel:1, fields:['id','name','startDate','targetDate','order'] },
@@ -1909,6 +1909,15 @@ body.dark .mphases, body.dark .mph, body.dark .mot{ border-color:var(--border); 
 #view-timeline #timelineInitBody{ padding:0 !important; }
 #view-timeline .mstatus{ margin-top:0; }
 @media (max-width:700px){ #view-timeline .tl-switcher{ position:static; margin:8px 0 0 !important; } }
+/* v11.3 · status words keep their meaning on the Client-View-coloured cards */
+.wsc-b .wsc-late .wsc-st{ color:#B5452F; font-weight:600; } .wsc-b .wsc-now .wsc-st{ color:#8A6431; font-weight:600; }
+[data-theme="dark"] .wsc-b .wsc-late .wsc-st{ color:#F0937D; } [data-theme="dark"] .wsc-b .wsc-now .wsc-st{ color:#E2B979; }
+
+/* v11.3 · Applicable / Not applicable pill on the Epics page */
+.ep-app{ all:unset; box-sizing:border-box; cursor:pointer; display:inline-block; white-space:nowrap; font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; border:1px solid transparent; }
+.ep-app.on{ background:#E7F4EC; color:#1E7F4C; border-color:#BFE3CD; } .ep-app.off{ background:#F1F3F6; color:#6B7785; border-color:#DDE2E8; }
+.ep-app:hover:not([disabled]){ filter:brightness(.96); box-shadow:0 0 0 2px rgba(15,40,55,.08); } .ep-app[disabled]{ cursor:default; }
+[data-theme="dark"] .ep-app.on{ background:#173A2A; color:#6FD3A0; border-color:#22543D; } [data-theme="dark"] .ep-app.off{ background:#1E2840; color:#9EACC1; border-color:#2D3A53; }
 /* ════════ v11 · admin panel ════════ */
 #kpiStrip{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:0 0 22px; }
 #kpiStrip[hidden]{ display:none; }
@@ -3371,6 +3380,22 @@ function cpPayload(){
 }
 
 
+/* v11.3 · is this epic part of its workstream's %?  'yes' = Applicable (counts even with no tasks), 'no' = Not applicable (never counts),
+   not set = counts once it has tasks (the rule used before). */
+function epicIncluded(e){ return e.applicable === 'no' ? false : e.applicable === 'yes' ? true : (e.taskCount || 0) > 0; }
+window.epicToggleApplicable = function(idx, ev){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  if(myLevel() < 3){ showInfoToast('Only editors can change this.'); return; }
+  const e = MOC_DATA[idx]; if(!e) return;
+  e.applicable = epicIncluded(e) ? 'no' : 'yes';
+  setLastUpdate(); renderAllViews();
+  showInfoToast(e.applicable === 'yes' ? '✓ ' + e.name + ' is Applicable - it now counts in ' + (e.initiative || 'its workstream') + (e.taskCount ? '' : ' (0% until it has tasks)')
+                                       : '✓ ' + e.name + ' is Not applicable - it no longer counts in ' + (e.initiative || 'its workstream'));
+};
+function epicApplicableBtn(e, idx){
+  const on = epicIncluded(e), can = myLevel() >= 3, why = e.applicable ? '' : (on ? ' (it has tasks)' : ' (no tasks yet)');
+  return `<button type="button" class="ep-app ${on ? 'on' : 'off'}" ${can ? `onclick="epicToggleApplicable(${idx}, event)"` : 'disabled'} title="${on ? 'Counts in the workstream %' : 'Left out of the workstream %'}${why}${can ? ' - click to change' : ''}">${on ? 'Applicable' : 'Not applicable'}</button>`;
+}
 function recomputeRollups(){
   if(window.CURRENT_USER && window.CURRENT_USER.role === 'client') return;   // client: numbers come pre-computed from clientview
   TASKS_DATA.forEach(t=>{ t.pct = taskPctFromStatus(t.status); t.milestone = taskMilestone(t); });   // milestone: shown / sorted / filtered, never stored
@@ -3390,7 +3415,7 @@ function recomputeRollups(){
     const eps = epicsOfMilestone(m);
     m.epicCount = eps.length;
     m.taskCount = eps.reduce((a,e)=>a+e.taskCount,0);
-    const started = eps.filter(e=>e.taskCount > 0);          // epics with no tasks yet don't pull the % down
+    const started = eps.filter(epicIncluded);               // v11.3: Applicable epics count (0% until they have tasks), Not applicable never; unset = counts once it has tasks
     m.startedCount = started.length;
     m.pctExact  = started.length ? started.reduce((a,e)=>a+e.pctExact,0)/started.length : 0;
     m.pct       = Math.round(m.pctExact);
@@ -4073,7 +4098,7 @@ window.openMilestoneDetail = function(name){
     ${popupHeaderHTML(escapeHtml(m.name), 'Milestone' + (m.targetDate ? ' · target ' + fmtDate(new Date(m.targetDate)) : ''))}
     <div class="popup-body">
       <div class="detail-stat-grid">
-        <div><div class="detail-lbl">Milestone Progress</div><b style="font-size:calc(18px * var(--fa,1) + var(--fb,0px));">${m.pct||0}%</b><div style="font-size:calc(11px * var(--fa,1) + var(--fb,0px));color:var(--muted);">auto · average of its ${m.startedCount||0} started epics</div></div>
+        <div><div class="detail-lbl">Milestone Progress</div><b style="font-size:calc(18px * var(--fa,1) + var(--fb,0px));">${m.pct||0}%</b><div style="font-size:calc(11px * var(--fa,1) + var(--fb,0px));color:var(--muted);">auto · average of its ${m.startedCount||0} included epics</div></div>
         <div><div class="detail-lbl">Epics</div><b style="font-size:calc(18px * var(--fa,1) + var(--fb,0px));">${eps.length}</b></div>
         <div><div class="detail-lbl">Tasks done</div><b style="font-size:calc(18px * var(--fa,1) + var(--fb,0px));">${done}/${tasks}</b></div>
         <div><div class="detail-lbl">Target date</div><b style="font-size:calc(14px * var(--fa,1) + var(--fb,0px));">${m.targetDate ? fmtDate(new Date(m.targetDate)) : '-'}</b></div>
@@ -4692,7 +4717,7 @@ function renderWorkstreamsTable(){
   const cols = [
     {key:'initiative', label:'Milestone'},
     {key:'name', label:'Epic'}, {key:'pillar', label:'Pillar'},
-    {key:'lead', label:'Assignee'}, {key:'risk', label:'Risk'},
+    {key:'lead', label:'Assignee'}, {key:'risk', label:'Risk'}, {key:null, label:'In calculation'},
     {key:'pct', label:'Epic Progress'}, {key:null, label:'Trend'}, {key:null, label:'Last Update'}, {key:null, label:'Next Step'}
   ];
   $('#wsTable').innerHTML = `
@@ -4708,6 +4733,7 @@ function renderWorkstreamsTable(){
         
         <td>${i.lead}</td>
         <td>${badge(i.risk)}</td>
+        <td>${epicApplicableBtn(i, idx)}</td>
         <td>${progressBar(i.pct)} <span style="font-size:calc(11px * var(--fa,1) + var(--fb,0px));color:var(--muted);">${i.pct}%</span><div style="font-size:calc(10px * var(--fa,1) + var(--fb,0px));color:var(--muted);white-space:nowrap;" title="Average of linked tasks (Completed = 100%) · 0% if no tasks">${i.taskCount?`${i.doneCount}/${i.taskCount} tasks done`:'no tasks yet'}</div></td>
         <td>${sparklineSVG([{date:daysFromToday(-7), pct:getPctDaysAgo(i,7)}, {date:daysFromToday(0), pct:i.pct}], {width:70, height:24})}</td>
         <td style="font-size:calc(12px * var(--fa,1) + var(--fb,0px));">${i.past}</td>
@@ -4918,15 +4944,17 @@ function renderTimelineInitiative(){
     status = escapeHtml(current.stage) + ' is the current phase, ' + current.pct + '% done' + (days === null ? '.' : days > 1 ? ' with ' + days + ' days to its ' + fd(current.end) + ' target.' : days === 1 ? ' with 1 day to its ' + fd(current.end) + ' target.' : ', due today.'); }
   var lateN = items.filter(function(x){ return x.late; }).length;
   if(lateN) status += ' ' + lateN + ' workstream' + (lateN===1?' is':'s are') + ' past target.';
-  var variant = window.__wsVariant || 'a';
+  var variant = window.__wsVariant || 'b';
+  var cvOrder = []; try{ cvOrder = ((buildClientPayload() || {}).milestones || []).map(function(m){ return normKey(m.name); }); }catch(e){}
   var cards = items.map(function(x, k){
+    var ci = cvOrder.indexOf(normKey(x.m.name)); if(ci < 0) ci = k;
     var m = x.m, meta = WSM[normKey(m.name)] || { icon:'pin', short:m.name };
     var st = x.pct >= 100 ? 'done' : x === current ? 'now' : x.late ? 'late' : x.pct > 0 ? 'prog' : 'todo';
     var label = { done:'Complete', now:'Current phase', late:'Past target', prog:'In progress', todo:'Not started' }[st];
     var a = m.startedCount||0, b = m.epicCount||0;
-    var epics = a + ' of ' + b + ' epic' + (b===1?'':'s') + ' ' + (b===1 || a===1 ? 'has' : 'have') + ' tasks';
+    var epics = a + ' of ' + b + ' epic' + (b===1?'':'s') + ' included';
     var dates = x.end ? (x.start ? fd(x.start) + ' – ' : 'Due ') + fd(x.end) : '';
-    return '<button type="button" class="wsc wsc-' + st + '" style="--wc:' + COL[k % COL.length] + ';" onclick="openMilestoneDetail(MILESTONES_DATA[' + x.i + '].name)" title="See this workstream\'s epics">'
+    return '<button type="button" class="wsc wsc-' + st + '" style="--wc:' + COL[ci % COL.length] + ';" onclick="openMilestoneDetail(MILESTONES_DATA[' + x.i + '].name)" title="See this workstream\'s epics">'
       + '<span class="wsc-top"><span class="wsc-ico">' + (typeof lineIcon === 'function' ? lineIcon(meta.icon, 20) : '') + '</span><span class="wsc-st">' + label + '</span><span class="wsc-tag">M' + (k+1) + '</span></span>'
       + '<span class="wsc-pct">' + x.pct + '%</span>'
       + '<span class="wsc-name">' + escapeHtml(meta.short || m.name) + '</span>'
@@ -4938,7 +4966,7 @@ function renderTimelineInitiative(){
   $('#timelineInitBody').innerHTML =
       (status ? '<p class="mstatus">' + status + '</p>' : '')
     + '<div class="wsc-grid wsc-' + variant + '">' + cards + '</div>'
-    + '<p class="mnote">How to read it: the % is the average progress of the epics that have tasks in that workstream (an epic\'s progress = its completed tasks). Click a card to see its epics.</p>'
+    + '<p class="mnote">How to read it: the % is the average progress of the epics included in that workstream (an epic\'s progress = its completed tasks). An epic is included when it has tasks or is marked <b>Applicable</b> on the Epics page (then it counts as 0% until work starts); <b>Not applicable</b> epics are left out. Click a card to see its epics.</p>'
     + '<div id="wsKpiSlot"></div>';
   var sl = document.getElementById('wsKpiSlot'); if(ks && sl && document.getElementById('view-timeline').classList.contains('active')) sl.appendChild(ks);
   if(typeof window.mocKpiTick === 'function') setTimeout(window.mocKpiTick, 0);
@@ -7587,10 +7615,10 @@ function renderClientView(){
             <div class="ws-pct">${m.pct}%</div>
             <div class="ws-name">${escapeHtml(meta.short)}</div>
             <div class="ws-bar"><i style="width:${m.pct}%;"></i></div>
-            <div class="ws-sub">${m.startedCount!=null ? `${m.startedCount} of ${m.epicCount} epics started` : `${m.epicCount} epics`}${d ? ` · ${fmtD(m.startDate) ? fmtD(m.startDate)+' - ' : ''}${fmtD(m.targetDate)}` : ''}</div>
+            <div class="ws-sub">${m.startedCount!=null ? `${m.startedCount} of ${m.epicCount} epics included` : `${m.epicCount} epics`}${d ? ` · ${fmtD(m.startDate) ? fmtD(m.startDate)+' - ' : ''}${fmtD(m.targetDate)}` : ''}</div>
           </div>`; }).join('')}
       </div>
-      <p class="cv-note">How to read it: the % is the average progress of the epics that have <b>started</b> in that milestone (an epic's progress = its completed tasks). Epics that have not started are not counted until they start.</p>
+      <p class="cv-note">How to read it: the % is the average progress of the epics <b>included</b> in that milestone (an epic's progress = its completed tasks). Epics marked not applicable, or not started yet, are not counted until they start.</p>
     </div></section>
 
     <section class="cv-sec report-zone"><button class="zone-shot-btn" onclick="captureSlide(this.nextElementSibling)" title="Copy this section as an image for a slide">📷 Copy as Image</button><div class="cv-slide">
@@ -7645,7 +7673,7 @@ function renderClientView(){
               <div><div class="jr-key">${j.key.toUpperCase()}</div><div class="jr-dates">${!m ? '' : j.outOfScope ? 'From ' + fmtD(m.startDate || m.targetDate) : (m.startDate ? fmtD(m.startDate) + ' - ' : '') + fmtD(m.targetDate)}</div></div></div>
             <div class="jr-title">${j.title}</div>
             <div class="jr-status" style="color:${j.color};">${st}</div>
-            <div class="jr-note">${j.outOfScope ? 'Shown for reference only' : j.note}${m && m.startedCount!=null && !j.outOfScope ? ` · ${m.startedCount} of ${m.epicCount} epics started` : ''}</div>
+            <div class="jr-note">${j.outOfScope ? 'Shown for reference only' : j.note}${m && m.startedCount!=null && !j.outOfScope ? ` · ${m.startedCount} of ${m.epicCount} epics included` : ''}</div>
           </div>`; }).join('')}
       </div>
       <div data-part="deliv"><h3 class="cv-cap" style="margin-top:18px;">Delivered to date ${editBtn('editClientDeliverables()','Add / remove / change deliverables')}</h3>
@@ -7887,7 +7915,7 @@ window.openClientMilestone = function(i){
     ${popupHeaderHTML(escapeHtml(m.name), 'Milestone' + (d ? ' · target ' + fmtDate(d) : ''))}
     <div class="popup-body">
       <div class="detail-stat-grid">
-        <div><div class="detail-lbl">Progress</div><b style="font-size:calc(18px * var(--fa,1) + var(--fb,0px));">${m.pct}%</b><div style="font-size:calc(11px * var(--fa,1) + var(--fb,0px));color:var(--muted);">${m.startedCount!=null ? m.startedCount + ' of ' + m.epicCount + ' epics started' : ''}</div></div>
+        <div><div class="detail-lbl">Progress</div><b style="font-size:calc(18px * var(--fa,1) + var(--fb,0px));">${m.pct}%</b><div style="font-size:calc(11px * var(--fa,1) + var(--fb,0px));color:var(--muted);">${m.startedCount!=null ? m.startedCount + ' of ' + m.epicCount + ' epics included' : ''}</div></div>
         <div><div class="detail-lbl">Epics</div><b style="font-size:calc(18px * var(--fa,1) + var(--fb,0px));">${eps.length}</b></div>
         <div><div class="detail-lbl">Epics completed</div><b style="font-size:calc(18px * var(--fa,1) + var(--fb,0px));">${eps.filter(e=>e.pct>=100).length}</b></div>
         <div><div class="detail-lbl">Target date</div><b style="font-size:calc(14px * var(--fa,1) + var(--fb,0px));">${d ? fmtDate(d) : '-'}</b></div>
@@ -8251,7 +8279,7 @@ window.downloadClientPptx = async function(mode){
       T(sl, String(meta.short || m.name).toUpperCase(), x+0.1, y+1.12, w-0.2, 0.34, { fontSize:12, bold:true, align:'center', charSpacing:1 });
       BAR(sl, x+0.25, y+1.55, w-0.5, 0.09, m.pct, c);
       const dt = m.targetDate ? ((m.startDate ? new Date(m.startDate).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + ' - ' : '') + new Date(m.targetDate).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})) : '';
-      T(sl, `${m.startedCount!=null ? m.startedCount + ' of ' + m.epicCount + ' epics started' : m.epicCount + ' epics'}${dt ? ' · ' + dt : ''}`, x+0.1, y+1.8, w-0.2, 0.5, { fontSize:11, color:GREY, align:'center' });
+      T(sl, `${m.startedCount!=null ? m.startedCount + ' of ' + m.epicCount + ' epics included' : m.epicCount + ' epics'}${dt ? ' · ' + dt : ''}`, x+0.1, y+1.8, w-0.2, 0.5, { fontSize:11, color:GREY, align:'center' });
     }); }
 
   // ---- 3. Where We Stand Today ----
@@ -8303,7 +8331,7 @@ window.downloadClientPptx = async function(mode){
       T(sl, m ? (j.outOfScope ? 'From ' + fd(m.startDate || m.targetDate) : (m.startDate ? fd(m.startDate) + ' - ' : '') + fd(m.targetDate)) : '', x+0.95, y+0.55, w-1.05, 0.28, { fontSize:11, color:GREY });
       T(sl, j.title, x+0.2, y+1.05, w-0.4, 0.34, { fontSize:16 });
       T(sl, j.outOfScope ? 'Not in current scope' : p>=100 ? 'Complete · 100%' : p>0 ? 'In progress · ' + p + '%' : 'Not started', x+0.2, y+1.45, w-0.4, 0.36, { fontSize:17, bold:true, color:hex(j.color) });
-      T(sl, j.outOfScope ? 'Shown for reference only' : j.note + (m && m.startedCount!=null ? ` · ${m.startedCount} of ${m.epicCount} epics started` : ''), x+0.2, y+1.85, w-0.4, 0.7, { fontSize:11, color:GREY, valign:'top' });
+      T(sl, j.outOfScope ? 'Shown for reference only' : j.note + (m && m.startedCount!=null ? ` · ${m.startedCount} of ${m.epicCount} epics included` : ''), x+0.2, y+1.85, w-0.4, 0.7, { fontSize:11, color:GREY, valign:'top' });
       if(i < J.length-1) T(sl, '➜', x+w+0.02, y+1.2, 0.26, 0.3, { fontSize:14, color:LIGHT, align:'center' }); });
     cap(sl, 'Opportunities assessment - key results', 0.5, 4.55, 8);
     const F = P.facts || currentFacts(), fw = (12.33 - 0.25*3)/4;
