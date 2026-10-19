@@ -1879,6 +1879,36 @@ body.dark .mphases, body.dark .mph, body.dark .mot{ border-color:var(--border); 
 .topbar .brand .mark img.iih-night{ display:none !important; }
 [data-theme="dark"] .topbar .brand .mark img.iih-day{ display:none !important; }
 [data-theme="dark"] .topbar .brand .mark img.iih-night{ display:block !important; background:none !important; padding:0 !important; box-shadow:none !important; border-radius:0 !important; }
+
+/* v11.2 · workstream cards (Client View layout) */
+.wsc-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:4px 0 12px; }
+.wsc{ all:unset; box-sizing:border-box; cursor:pointer; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:14px 16px 16px; background:#fff; border:1px solid var(--moc-line,#E1E5EB); border-top:3px solid var(--k,#C9D1DA); border-radius:14px; transition:box-shadow .15s, transform .15s; }
+.wsc:hover{ box-shadow:0 6px 18px rgba(15,40,55,.08); transform:translateY(-1px); } .wsc:focus-visible{ outline:2px solid #781943; outline-offset:2px; }
+.wsc-top{ display:flex; align-items:center; gap:8px; width:100%; margin-bottom:2px; }
+.wsc-ico{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center; color:var(--k,#5E6C77); background:color-mix(in srgb, var(--k,#5E6C77) 12%, transparent); flex-shrink:0; }
+.wsc-st{ font-size:12px; color:#5E6C77; margin-inline-end:auto; } .wsc-tag{ font-size:11px; font-weight:600; letter-spacing:.08em; color:#7D8A95; }
+.wsc-pct{ font-size:calc(40px * var(--fa,1) + var(--fb,0px)); font-weight:300; letter-spacing:-.02em; line-height:1.05; color:var(--k,#0F2837); font-variant-numeric:tabular-nums; }
+.wsc-name{ font-size:calc(12px * var(--fa,1) + var(--fb,0px)); font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:#0F2837; }
+.wsc-bar{ display:block; width:100%; height:5px; border-radius:3px; background:#EDEFF3; margin:4px 0 2px; } .wsc-bar i{ display:block; height:100%; border-radius:3px; background:var(--k,#0F2837); }
+.wsc-sub{ font-size:calc(12.5px * var(--fa,1) + var(--fb,0px)); color:#5E6C77; } .wsc-sub.late{ color:#B5452F; }
+/* A: colour shows the status (Ministry colours) */
+.wsc-a .wsc-done{ --k:#0F2837; } .wsc-a .wsc-now{ --k:#B8874A; background:#FBF7F0; } .wsc-a .wsc-late{ --k:#C5634E; } .wsc-a .wsc-prog{ --k:#781943; } .wsc-a .wsc-todo{ --k:#9AA5AF; }
+.wsc-a .wsc-now .wsc-st{ color:#8A6431; font-weight:600; } .wsc-a .wsc-late .wsc-st{ color:#B5452F; }
+/* B: each workstream keeps its own Client View colour */
+.wsc-b .wsc{ --k:var(--wc); }
+#wsKpiSlot #kpiStrip{ margin:18px 0 6px; }
+@media (max-width:1100px){ .wsc-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:560px){ .wsc-grid{ grid-template-columns:1fr; } }
+[data-theme="dark"] .wsc{ background:var(--surface); border-color:var(--border); border-top-color:var(--k,#5E6C77); }
+[data-theme="dark"] .wsc-a .wsc-now{ background:#2A2417; } [data-theme="dark"] .wsc-a .wsc-done{ --k:#CFDAE8; } [data-theme="dark"] .wsc-a .wsc-prog{ --k:#F2A7C3; }
+[data-theme="dark"] .wsc-name{ color:var(--text); } [data-theme="dark"] .wsc-st, [data-theme="dark"] .wsc-sub{ color:var(--muted); } [data-theme="dark"] .wsc-bar{ background:#2A3650; }
+
+#view-timeline{ position:relative; }
+#view-timeline .tl-switcher{ position:absolute; top:0; right:0; margin:0 !important; padding:0 !important; border:0 !important; background:none !important; }
+#view-timeline #tl-initiative{ margin-top:14px !important; padding-top:0 !important; border:0 !important; box-shadow:none !important; background:none !important; }
+#view-timeline #timelineInitBody{ padding:0 !important; }
+#view-timeline .mstatus{ margin-top:0; }
+@media (max-width:700px){ #view-timeline .tl-switcher{ position:static; margin:8px 0 0 !important; } }
 /* ════════ v11 · admin panel ════════ */
 #kpiStrip{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:0 0 22px; }
 #kpiStrip[hidden]{ display:none; }
@@ -2142,12 +2172,11 @@ body.sb-rail .sidebar-divider{ margin:8px 4px !important; }
 
     <!-- TIMELINE -->
     <div class="view report-zone" id="view-timeline">
-      <h2 class="view-title">Project Milestones</h2>
-      <p class="view-sub">Milestone progress rolls up automatically: Tasks → Epics → Milestones. Hover the chart to copy it as an image.</p>
+      <h2 class="view-title">Workstreams View</h2>
+      <p class="view-sub">Milestone progress rolls up automatically: Tasks → Epics → Milestones. Click a card to see its epics.</p>
 
       <!-- View switcher -->
       <div class="tl-switcher">
-        <button class="tl-view-btn active" data-view="initiative" onclick="setTimelineView('initiative',this)">Milestone View</button>
         <button class="btn secondary" data-can="manageMilestones" onclick="openMilestonesModal()" style="margin-inline-start:auto;">✏️ Manage Milestones</button>
       </div>
 
@@ -4870,6 +4899,50 @@ function renderTimelineInitiative(){
     + '<p class="mnote">A task counts as 100% when it is completed. An epic is the average of its tasks; a workstream is the average of its started epics. Click any workstream to see its epics.</p>';
 }
 
+
+
+/* v11.2 · Project Workstreams = one card per workstream (same layout as Client View → Workstreams Progress To-Date, dashboard colours),
+   then the key numbers. Overrides the phase-strip version above. */
+function renderTimelineInitiative(){
+  var today = new Date(); today.setHours(0,0,0,0);
+  var DAY = 86400000, STAGES = ['Monitor','Analyze','Plan','Execute'], WSM = (typeof cfgWsMeta === 'function') ? cfgWsMeta() : {};
+  var COL = ['#E88B00','#C0266A','#7A8AA0','#2D6CDF','#00845A','#1F4E6B','#7651C9','#1A7FA8'];
+  var fd = function(d){ return d ? d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : ''; };
+  var stageOf = function(n){ for(var k=0;k<STAGES.length;k++){ if(n.indexOf(STAGES[k])>-1 && /strategy/i.test(n)) return STAGES[k]; } return null; };
+  var items = MILESTONES_DATA.map(function(m, i){ var end = m.targetDate ? new Date(m.targetDate) : null; if(end) end.setHours(0,0,0,0);
+    return { m:m, i:i, stage:stageOf(m.name), pct:m.pct||0, end:end, start: m.startDate ? new Date(m.startDate) : null, late: !!(end && end < today && (m.pct||0) < 100) }; });
+  var phases = items.filter(function(x){ return x.stage; });
+  var current = phases.filter(function(x){ return x.pct < 100 && !x.late && x.pct > 0; })[0] || phases.filter(function(x){ return x.pct < 100 && !x.late; })[0] || null;
+  var status = '';
+  if(current){ var days = current.end ? Math.round((current.end - today)/DAY) : null;
+    status = escapeHtml(current.stage) + ' is the current phase, ' + current.pct + '% done' + (days === null ? '.' : days > 1 ? ' with ' + days + ' days to its ' + fd(current.end) + ' target.' : days === 1 ? ' with 1 day to its ' + fd(current.end) + ' target.' : ', due today.'); }
+  var lateN = items.filter(function(x){ return x.late; }).length;
+  if(lateN) status += ' ' + lateN + ' workstream' + (lateN===1?' is':'s are') + ' past target.';
+  var variant = window.__wsVariant || 'a';
+  var cards = items.map(function(x, k){
+    var m = x.m, meta = WSM[normKey(m.name)] || { icon:'pin', short:m.name };
+    var st = x.pct >= 100 ? 'done' : x === current ? 'now' : x.late ? 'late' : x.pct > 0 ? 'prog' : 'todo';
+    var label = { done:'Complete', now:'Current phase', late:'Past target', prog:'In progress', todo:'Not started' }[st];
+    var a = m.startedCount||0, b = m.epicCount||0;
+    var epics = a + ' of ' + b + ' epic' + (b===1?'':'s') + ' ' + (b===1 || a===1 ? 'has' : 'have') + ' tasks';
+    var dates = x.end ? (x.start ? fd(x.start) + ' – ' : 'Due ') + fd(x.end) : '';
+    return '<button type="button" class="wsc wsc-' + st + '" style="--wc:' + COL[k % COL.length] + ';" onclick="openMilestoneDetail(MILESTONES_DATA[' + x.i + '].name)" title="See this workstream\'s epics">'
+      + '<span class="wsc-top"><span class="wsc-ico">' + (typeof lineIcon === 'function' ? lineIcon(meta.icon, 20) : '') + '</span><span class="wsc-st">' + label + '</span><span class="wsc-tag">M' + (k+1) + '</span></span>'
+      + '<span class="wsc-pct">' + x.pct + '%</span>'
+      + '<span class="wsc-name">' + escapeHtml(meta.short || m.name) + '</span>'
+      + '<span class="wsc-bar"><i style="width:' + Math.min(100, x.pct) + '%"></i></span>'
+      + '<span class="wsc-sub">' + epics + '</span>'
+      + '<span class="wsc-sub' + (x.late ? ' late' : '') + '">' + escapeHtml(dates) + (m.taskCount != null ? ' · ' + m.taskCount + ' task' + (m.taskCount===1?'':'s') : '') + '</span></button>';
+  }).join('');
+  var ks = document.getElementById('kpiStrip');   // keep the key-numbers strip when this page is rebuilt
+  $('#timelineInitBody').innerHTML =
+      (status ? '<p class="mstatus">' + status + '</p>' : '')
+    + '<div class="wsc-grid wsc-' + variant + '">' + cards + '</div>'
+    + '<p class="mnote">How to read it: the % is the average progress of the epics that have tasks in that workstream (an epic\'s progress = its completed tasks). Click a card to see its epics.</p>'
+    + '<div id="wsKpiSlot"></div>';
+  var sl = document.getElementById('wsKpiSlot'); if(ks && sl && document.getElementById('view-timeline').classList.contains('active')) sl.appendChild(ks);
+  if(typeof window.mocKpiTick === 'function') setTimeout(window.mocKpiTick, 0);
+}
 
 // ── MAPE View - 4 phases with progress bars ──────────────────────────────
 function renderTimelineMape(){
@@ -9013,10 +9086,12 @@ Next steps (sample): ${MOC_DATA.filter(i=>i.next).slice(0,4).map(i=>`${i.name}: 
   function paintKpi(){
     var main = document.querySelector('.main'); if(!main) return;
     var el = document.getElementById('kpiStrip');
-    if(!el){ el = document.createElement('div'); el.id = 'kpiStrip'; el.className = 'no-print no-shot'; main.insertBefore(el, main.firstChild);
+    if(!el){ last = ''; el = document.createElement('div'); el.id = 'kpiStrip'; el.className = 'no-print no-shot'; main.insertBefore(el, main.firstChild);
       el.addEventListener('click', function(e){ var b = e.target.closest('[data-go]'); if(!b) return; var g = b.dataset.go;
         if(g.indexOf('cp:') === 0){ var a = g.split(':'); cpNavGo(a[1]); if(a[1] === 'plan' && typeof cpSet === 'function') cpSet('planSt', a[2] || ''); window.scrollTo(0, 0); }
         else if(typeof showTab === 'function') showTab(g); }); }
+    var slot = document.querySelector('#view-timeline.active #wsKpiSlot');
+    if(slot){ if(el.parentNode !== slot) slot.appendChild(el); } else if(el.parentNode !== main || main.firstChild !== el){ main.insertBefore(el, main.firstChild); }
     var v = document.querySelector('.main .view.active'), id = v ? v.id : '';
     var role = window.CURRENT_USER && window.CURRENT_USER.role;
     var hide = !v || /view-(client|users|email)$/.test(id) || role === 'client';
@@ -9036,6 +9111,7 @@ Next steps (sample): ${MOC_DATA.filter(i=>i.next).slice(0,4).map(i=>`${i.name}: 
         for(var i = 0; i < tds.length; i++){ if(tds[i].tagName === 'TD' && !tds[i].hasAttribute('data-label') && heads[i] != null) tds[i].setAttribute('data-label', heads[i]); } });
     });
   }
+  window.mocKpiTick = function(){ tick(); };
   function tick(){ try{ paintKpi(); }catch(e){ console.warn('kpi', e); } if(innerWidth <= 700){ try{ labelTables(); }catch(e){} } }
   function start(){
     addFold(); tick();
